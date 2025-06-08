@@ -18,7 +18,7 @@ export default function GraficznePage() {
             <Home className="w-5 h-5" />
           </SidebarMenuItem>
           <SidebarMenuItem label="Graficzne" href="/graficzne">
-            <Image className="w-5 h-5" />
+            <Image className="w-5 h-5" aria-label="Ikona graficzna" />
           </SidebarMenuItem>
           <SidebarMenuItem label="Ustawienia" href="#">
             <Settings className="w-5 h-5" />
