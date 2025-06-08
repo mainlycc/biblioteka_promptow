@@ -16,13 +16,12 @@ interface Prompt {
   fullPrompt: string;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: Props) {
   // TODO: Pobieranie danych z API lub bazy danych
   const prompt: Prompt = {
     id: params.id,
