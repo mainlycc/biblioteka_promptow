@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Copy } from "lucide-react";
+import Image from "next/image";
 
 interface GraphicCardProps {
   images: string[]; // tablica ścieżek do obrazków PNG (max 4)
@@ -25,7 +26,13 @@ export function GraphicCard({ images, author = "Autor", avatarUrl = "/avatar.png
       {[0, 1, 2, 3].map((i) => (
         <div key={i} className="flex items-center justify-center bg-white rounded shadow-inner border border-orange-100 overflow-hidden">
           {images[i] ? (
-            <img src={images[i]} alt={`Obrazek ${i + 1}`} className="max-w-[80%] max-h-[80%] object-contain" />
+            <Image 
+              src={images[i]} 
+              alt={`Obrazek ${i + 1}`} 
+              width={100}
+              height={100}
+              className="max-w-[80%] max-h-[80%] object-contain" 
+            />
           ) : (
             <span className="text-xs text-muted-foreground">Brak obrazka</span>
           )}
@@ -34,7 +41,13 @@ export function GraphicCard({ images, author = "Autor", avatarUrl = "/avatar.png
       {/* Dolny pasek z avatarem, autorem i przyciskiem kopiowania */}
       <div className="absolute left-0 right-0 bottom-0 flex items-center justify-between gap-2 bg-white/80 px-4 py-2 border-t border-orange-100">
         <div className="flex items-center gap-2">
-          <img src={avatarUrl} alt={author} className="w-8 h-8 rounded-full border border-orange-200 object-cover" />
+          <Image 
+            src={avatarUrl} 
+            alt={author} 
+            width={32}
+            height={32}
+            className="rounded-full border border-orange-200 object-cover" 
+          />
           <span className="text-sm font-medium text-main-orange-dark">{author}</span>
         </div>
         <button

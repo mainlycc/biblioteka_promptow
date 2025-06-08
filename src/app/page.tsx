@@ -7,8 +7,6 @@ import {
 } from "@/components/ui/sidebar"
 import { Home, Settings, Image } from "lucide-react"
 import { PromptGrid } from "@/components/prompt-grid"
-import { GraphicCard } from "@/components/graphic-card"
-import { usePathname } from "next/navigation"
 
 export default function HomePage() {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
