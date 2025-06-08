@@ -1,3 +1,5 @@
+"use server";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CopyButton } from "@/components/copy-button";
 import Image from "next/image";
@@ -159,7 +161,7 @@ const similarPrompts = [
   },
 ];
 
-export default function PromptPage({
+export default async function PromptPage({
   params,
 }: {
   params: { id: string }
