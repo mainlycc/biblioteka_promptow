@@ -22,7 +22,7 @@ export default async function Page({
   params,
 }: {
   params: { id: string }
-}) {
+}): Promise<JSX.Element> {
   // TODO: Pobieranie danych z API lub bazy danych
   const prompt: Prompt = {
     id: params.id,
