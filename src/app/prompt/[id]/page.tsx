@@ -159,7 +159,12 @@ const similarPrompts = [
   },
 ];
 
-export default function PromptPage({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function PromptPage({ params }: Props) {
   const prompt = prompts.find((p) => p.id === params.id);
 
   if (!prompt) {
