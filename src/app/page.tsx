@@ -19,7 +19,7 @@ export default function HomePage() {
             <Home className="w-5 h-5" />
           </SidebarMenuItem>
           <SidebarMenuItem label="Graficzne" href="/graficzne">
-            <Image className="w-5 h-5" alt="Ikona graficzna" />
+            <Image className="w-5 h-5" />
           </SidebarMenuItem>
           <SidebarMenuItem label="Ustawienia" href="#">
             <Settings className="w-5 h-5" />
