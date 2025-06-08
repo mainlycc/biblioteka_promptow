@@ -23,7 +23,7 @@ type PageProps = {
   searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
   // TODO: Pobieranie danych z API lub bazy danych
   const prompt: Prompt = {
     id: params.id,
