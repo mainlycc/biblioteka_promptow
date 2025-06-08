@@ -1,5 +1,3 @@
-"use server";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CopyButton } from "@/components/copy-button";
 
@@ -18,11 +16,13 @@ interface Prompt {
   fullPrompt: string;
 }
 
-export default async function Page({
-  params,
-}: {
-  params: { id: string }
-}): Promise<JSX.Element> {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function Page({ params }: PageProps) {
   // TODO: Pobieranie danych z API lub bazy danych
   const prompt: Prompt = {
     id: params.id,
