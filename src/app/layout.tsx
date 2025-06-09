@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { Header } from "@/components/header-dashboard";
 import Footer from "@/components/footer-dashboard";
@@ -22,9 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl">
-      <body
-        className={`${inter.variable} ${GeistSans.variable} ${GeistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} font-sans antialiased`}>
         <Header />
         {children}
         <Footer />
