@@ -82,7 +82,8 @@
   --main-border: 2px solid var(--main-orange);
   --main-radius: 8px;
   --main-bg: #fff;
-  --main-font: 'Inter', Arial, sans-serif;
+  --main-font: var(--font-geist-sans);
+  --main-mono-font: var(--font-geist-mono);
 }
 
 .dark {
@@ -131,7 +132,7 @@
 body {
   background: var(--main-bg);
   color: var(--main-orange-dark);
-  font-family: var(--main-font);
+  font-family: var(--font-sans);
   min-height: 100vh;
   margin: 0;
   box-sizing: border-box;

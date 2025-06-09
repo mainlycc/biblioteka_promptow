@@ -42,11 +42,11 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function SidebarTrigger() {
+export function SidebarTrigger({ className }: { className?: string }) {
   const { open, setOpen } = useSidebar()
   return (
     <button
-      className="absolute top-4 left-4 z-50 bg-white border rounded p-2 shadow hover:bg-gray-50 transition md:hidden"
+      className={`absolute top-4 left-4 z-50 bg-white border rounded p-2 shadow hover:bg-gray-50 transition md:hidden ${className || ''}`}
       onClick={() => setOpen(!open)}
       aria-label={open ? "Zwiń menu" : "Rozwiń menu"}
       type="button"
