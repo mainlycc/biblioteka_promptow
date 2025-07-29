@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, PlusCircle, Search, Settings, Users, Twitter, Image, Film, FileText } from "lucide-react"
+import { PlusCircle, Search, Image, Film, FileText } from "lucide-react"
 import React from "react"
 
 const routes = [
