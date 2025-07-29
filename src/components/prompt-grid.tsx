@@ -70,8 +70,8 @@ export function PromptGrid() {
                 <div className="px-4 pt-2">
                   <h3 className="font-semibold text-base text-black text-center">{prompt.title}</h3>
                 </div>
-                <CardContent className="flex flex-col flex-1 gap-2 pt-2 px-4">
-                  <div className="text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-visible flex-1">{prompt.description}</div>
+                <CardContent className="flex flex-col flex-1 gap-2 pt-2 px-4 pb-0">
+                  <div className="text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-hidden line-clamp-6">{prompt.description}</div>
                   <div className="flex flex-wrap gap-1">
                     {prompt.tags.map((tag, i) => (
                       <Badge key={i} variant="outline">{tag}</Badge>
@@ -79,7 +79,7 @@ export function PromptGrid() {
                   </div>
                 </CardContent>
               </Link>
-              <div className="flex justify-between items-center mt-auto px-4 pt-2 border-t">
+              <div className="flex justify-between items-center mt-auto px-4 py-2 border-t">
                 <div className="flex items-center gap-1">
                   <Avatar className="h-5 w-5">
                     <AvatarFallback className="text-xs">

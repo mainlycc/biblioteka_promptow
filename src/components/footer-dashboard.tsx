@@ -7,6 +7,9 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-[#d03801]/70">
           <div className="flex items-center gap-4">
             <span>© 2024 Biblioteka promptów</span>
+            <Link href="/blog" className="hover:text-[#d03801] transition-colors">
+              Blog
+            </Link>
             <Link href="/privacy" className="hover:text-[#d03801] transition-colors">
               Prywatność
             </Link>
@@ -17,9 +20,6 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             <Link href="/contact" className="hover:text-[#d03801] transition-colors">
               Kontakt
-            </Link>
-            <Link href="/about" className="hover:text-[#d03801] transition-colors">
-              O nas
             </Link>
           </div>
         </div>

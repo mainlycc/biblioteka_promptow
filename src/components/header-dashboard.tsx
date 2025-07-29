@@ -9,18 +9,18 @@ export function Header() {
       <Link href="/" className="flex items-center gap-3 text-xl font-semibold transition-colors hover:text-[color:var(--main-orange)]">
         <Image
           src="/logo.png"
-          alt="Logo Biblioteki Promptów"
-          width={50}
-          height={50}
+          alt="Logo Biblioteki promptów"
+          width={150}
+          height={150}
           className="object-contain"
         />
-        Biblioteka promptów
+        
       </Link>
       <div className="flex-1 flex justify-center">
         <Input placeholder="Szukaj promptów..." className="max-w-md" />
       </div>
       <Button asChild variant="outline">
-        <Link href="/login">Zaloguj się</Link>
+        <Link href="/newsletter">Dołącz do nas</Link>
       </Button>
     </header>
   );
