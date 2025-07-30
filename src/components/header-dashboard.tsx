@@ -9,12 +9,14 @@ export function Header() {
       <Link href="/" className="flex items-center gap-3 text-xl font-semibold transition-colors hover:text-[color:var(--main-orange)]">
         <Image
           src="/logo.png"
-          alt="Logo Biblioteki promptów"
+          alt="Biblioteka Promptów - Najlepsze prompty dla AI"
           width={150}
           height={150}
           className="object-contain"
+          priority
+          loading="eager"
         />
-        
+        <span className="sr-only">Biblioteka Promptów</span>
       </Link>
       <div className="flex-1 flex justify-center">
         <Input placeholder="Szukaj promptów..." className="max-w-md" />

@@ -1,5 +1,4 @@
-"use client"
-
+import type { Metadata } from "next"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,27 @@ import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, Send, Check } from "lucide-react"
 import Link from "next/link"
+import { Breadcrumbs } from "@/components/breadcrumbs"
+import { trackContactForm } from "@/components/google-analytics"
+
+export const metadata: Metadata = {
+  title: "Kontakt - Biblioteka Promptów",
+  description: "Skontaktuj się z zespołem Biblioteki Promptów. Masz pytania lub sugestie? Jesteśmy tutaj, aby pomóc!",
+  keywords: ["kontakt", "pomoc", "wsparcie", "sugestie", "pytania"],
+  openGraph: {
+    title: "Kontakt - Biblioteka Promptów",
+    description: "Skontaktuj się z zespołem Biblioteki Promptów. Masz pytania lub sugestie? Jesteśmy tutaj, aby pomóc!",
+    url: "https://bibliotekapromptow.pl/contact",
+    type: "website",
+  },
+  twitter: {
+    title: "Kontakt - Biblioteka Promptów",
+    description: "Skontaktuj się z zespołem Biblioteki Promptów. Masz pytania lub sugestie? Jesteśmy tutaj, aby pomóc!",
+  },
+  alternates: {
+    canonical: "/contact",
+  },
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -30,6 +50,7 @@ export default function ContactPage() {
     setIsSubmitting(false)
     setIsSubmitted(true)
     setFormData({ name: "", email: "", subject: "", message: "" })
+    trackContactForm()
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -41,16 +62,12 @@ export default function ContactPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      {/* Navigation */}
-      <div className="mb-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Powrót do strony głównej
-        </Link>
-      </div>
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: "Kontakt" }
+        ]} 
+      />
 
       {/* Header */}
       <div className="mb-8">

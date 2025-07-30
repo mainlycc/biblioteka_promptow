@@ -10,6 +10,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Copy, Share2, Check, Calendar, User, Tag, Code } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { PromptSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
+import { Breadcrumbs } from "@/components/breadcrumbs"
+import { trackPromptCopy, trackPromptShare } from "@/components/google-analytics"
 
 interface Prompt {
   id: string;
@@ -59,6 +62,7 @@ export default function Page({ params }: Props) {
       await navigator.clipboard.writeText(`${prompt.title}\n${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      trackPromptCopy(prompt.id, prompt.title)
     } catch (err) {
       console.error("Failed to copy text: ", err)
     }
@@ -77,6 +81,9 @@ export default function Page({ params }: Props) {
         setShared(true)
         setTimeout(() => setShared(false), 2000)
       }
+      if (prompt) {
+        trackPromptShare(prompt.id, prompt.title)
+      }
     } catch (err) {
       console.error("Failed to share: ", err)
     }
@@ -91,17 +98,27 @@ export default function Page({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Navigation */}
-      <div className="mb-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Powrót do biblioteki
-        </Link>
-      </div>
+    <>
+      {prompt && (
+        <>
+          <PromptSchema prompt={prompt} />
+          <BreadcrumbSchema 
+            items={[
+              { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
+              { name: "Biblioteka", url: "https://bibliotekapromptow.pl" },
+              { name: prompt.title, url: `https://bibliotekapromptow.pl/prompt/${prompt.id}` }
+            ]} 
+          />
+        </>
+      )}
+            <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: "Biblioteka", href: "/" },
+            { label: prompt.title }
+          ]} 
+        />
 
       {/* Header */}
       <div className="mb-8">
@@ -224,5 +241,6 @@ export default function Page({ params }: Props) {
         </Alert>
       )}
     </div>
+    </>
   )
 } 

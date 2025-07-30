@@ -1,10 +1,29 @@
-"use client"
-
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Calendar, User, Clock } from "lucide-react"
+import { Breadcrumbs } from "@/components/breadcrumbs"
+
+export const metadata: Metadata = {
+  title: "Blog - Biblioteka Promptów",
+  description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji. Eksperckie artykuły o AI.",
+  keywords: ["blog AI", "prompt engineering", "artykuły AI", "trendy AI", "porady ChatGPT"],
+  openGraph: {
+    title: "Blog - Biblioteka Promptów",
+    description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji.",
+    url: "https://bibliotekapromptow.pl/blog",
+    type: "website",
+  },
+  twitter: {
+    title: "Blog - Biblioteka Promptów",
+    description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji.",
+  },
+  alternates: {
+    canonical: "/blog",
+  },
+}
 
 export default function BlogPage() {
   const blogPosts = [
@@ -52,16 +71,12 @@ export default function BlogPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Navigation */}
-      <div className="mb-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Powrót do strony głównej
-        </Link>
-      </div>
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: "Blog" }
+        ]} 
+      />
 
       {/* Header */}
       <div className="mb-8 text-center">
