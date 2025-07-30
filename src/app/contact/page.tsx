@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Send, Check } from "lucide-react"
-import Link from "next/link"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { trackContactForm } from "@/components/google-analytics"
 
