@@ -62,7 +62,7 @@ export default function Page({ params }: Props) {
       await navigator.clipboard.writeText(`${prompt.title}\n${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-      trackPromptCopy(prompt.id, prompt.title)
+      trackPromptCopy(prompt.title)
     } catch (err) {
       console.error("Failed to copy text: ", err)
     }
@@ -82,7 +82,7 @@ export default function Page({ params }: Props) {
         setTimeout(() => setShared(false), 2000)
       }
       if (prompt) {
-        trackPromptShare(prompt.id, prompt.title)
+        trackPromptShare(prompt.title)
       }
     } catch (err) {
       console.error("Failed to share: ", err)

@@ -40,12 +40,12 @@ export const trackEvent = (action: string, category: string, label?: string, val
 }
 
 // Funkcja do śledzenia kopiowania promptów
-export const trackPromptCopy = (promptId: string, promptTitle: string) => {
+export const trackPromptCopy = (promptTitle: string) => {
   trackEvent('copy_prompt', 'engagement', promptTitle, 1)
 }
 
 // Funkcja do śledzenia udostępniania promptów
-export const trackPromptShare = (promptId: string, promptTitle: string) => {
+export const trackPromptShare = (promptTitle: string) => {
   trackEvent('share_prompt', 'engagement', promptTitle, 1)
 }
 
