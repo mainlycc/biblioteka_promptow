@@ -10,10 +10,10 @@ export default function Footer() {
             <Link href="/blog" className="hover:text-[#d03801] transition-colors">
               Blog
             </Link>
-            <Link href="/privacy" className="hover:text-[#d03801] transition-colors">
-              Prywatność
+            <Link href="/polityka-prywatnosci" className="hover:text-[#d03801] transition-colors">
+              Polityka Prywatności
             </Link>
-            <Link href="/terms" className="hover:text-[#d03801] transition-colors">
+            <Link href="/regulamin" className="hover:text-[#d03801] transition-colors">
               Regulamin
             </Link>
           </div>

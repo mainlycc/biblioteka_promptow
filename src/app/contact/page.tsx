@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Send, Check } from "lucide-react"
+
+import { Send, Check, Mail, Clock, MessageSquare, MapPin } from "lucide-react"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { trackContactForm } from "@/components/google-analytics"
 
@@ -42,7 +42,8 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Breadcrumbs */}
       <Breadcrumbs 
         items={[
@@ -51,31 +52,90 @@ export default function ContactPage() {
       />
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">Kontakt</h1>
-        <p className="text-muted-foreground">
-          Masz pytania lub sugestie? Skontaktuj się z nami!
-        </p>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
+            <MessageSquare className="h-8 w-8 text-orange-600" />
+          </div>
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+            Skontaktuj się z nami
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Masz pytania, sugestie lub chcesz współpracować? Jesteśmy tutaj, aby Ci pomóc!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Contact Info Cards */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="border-orange-200 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-full mb-3">
+                  <Mail className="h-6 w-6 text-orange-600" />
+                </div>
+                <CardTitle className="text-lg">Email</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-orange-600 font-semibold">kontakt@bibliotekapromptow.pl</p>
+                <p className="text-sm text-gray-500 mt-2">Odpowiemy w ciągu 24 godzin</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-full mb-3">
+                  <Clock className="h-6 w-6 text-orange-600" />
+                </div>
+                <CardTitle className="text-lg">Godziny pracy</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-800 font-semibold">Poniedziałek - Piątek</p>
+                <p className="text-orange-600 font-semibold">9:00 - 17:00</p>
+                <p className="text-sm text-gray-500 mt-2">Weekendy: zamknięte</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-full mb-3">
+                  <MapPin className="h-6 w-6 text-orange-600" />
+                </div>
+                <CardTitle className="text-lg">Lokalizacja</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-800 font-semibold">Polska</p>
+                <p className="text-sm text-gray-500 mt-2">Online - dostępne 24/7</p>
+              </CardContent>
+            </Card>
       </div>
 
       {/* Contact Form */}
-      <Card className="border-[color:var(--main-orange)] mb-8">
-        <CardHeader>
-          <CardTitle>Formularz kontaktowy</CardTitle>
+          <div className="lg:col-span-2">
+            <Card className="border-orange-200 bg-white/90 backdrop-blur-sm shadow-xl">
+              <CardHeader className="text-center pb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-4">
+                  <Send className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-800">Formularz kontaktowy</CardTitle>
+                <p className="text-gray-600">Wypełnij formularz, a my skontaktujemy się z Tobą</p>
         </CardHeader>
-        <CardContent>
+              <CardContent className="p-8">
           {isSubmitted ? (
-            <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
-              <Check className="h-4 w-4" />
-              <AlertDescription>
-                Dziękujemy za wiadomość! Odpowiemy najszybciej jak to możliwe.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Imię i nazwisko *</Label>
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+                      <Check className="h-10 w-10 text-green-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-green-800 mb-4">Wiadomość wysłana!</h3>
+                    <p className="text-gray-600 text-lg">
+                      Dziękujemy za kontakt. Odpowiemy najszybciej jak to możliwe.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
+                          Imię i nazwisko *
+                        </Label>
                   <Input
                     id="name"
                     name="name"
@@ -84,10 +144,13 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Wprowadź swoje imię i nazwisko"
+                          className="h-12 border-orange-200 focus:border-orange-500 focus:ring-orange-500"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                      <div className="space-y-3">
+                        <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                          Email *
+                        </Label>
                   <Input
                     id="email"
                     name="email"
@@ -96,12 +159,15 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="twoj@email.com"
+                          className="h-12 border-orange-200 focus:border-orange-500 focus:ring-orange-500"
                   />
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="subject">Temat *</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="subject" className="text-sm font-semibold text-gray-700">
+                        Temat *
+                      </Label>
                 <Input
                   id="subject"
                   name="subject"
@@ -110,11 +176,14 @@ export default function ContactPage() {
                   value={formData.subject}
                   onChange={handleChange}
                   placeholder="Temat wiadomości"
+                        className="h-12 border-orange-200 focus:border-orange-500 focus:ring-orange-500"
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="message">Wiadomość *</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="message" className="text-sm font-semibold text-gray-700">
+                        Wiadomość *
+                      </Label>
                 <Textarea
                   id="message"
                   name="message"
@@ -122,20 +191,24 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   placeholder="Napisz swoją wiadomość..."
-                  rows={6}
+                        rows={8}
+                        className="border-orange-200 focus:border-orange-500 focus:ring-orange-500 resize-none"
                 />
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full" 
+                      className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300" 
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  "Wysyłanie..."
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                          Wysyłanie...
+                        </div>
                 ) : (
                   <>
-                    <Send className="h-4 w-4 mr-2" />
+                          <Send className="h-5 w-5 mr-3" />
                     Wyślij wiadomość
                   </>
                 )}
@@ -144,18 +217,9 @@ export default function ContactPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Additional Contact Info */}
-      <Card className="border-[color:var(--main-orange)]">
-        <CardHeader>
-          <CardTitle>Informacje kontaktowe</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <p><strong>Email:</strong> kontakt@bibliotekapromptow.pl</p>
-          <p><strong>Godziny pracy:</strong> Pon-Pt 9:00-17:00</p>
-          <p><strong>Odpowiedź:</strong> W ciągu 24 godzin</p>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   )
 } 

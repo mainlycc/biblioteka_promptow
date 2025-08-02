@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Mail, Check, Bell } from "lucide-react"
+import { ArrowLeft, Mail, Check, Bell, Clock, Star, Zap, Shield, Users, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
 export default function NewsletterPage() {
@@ -27,12 +27,13 @@ export default function NewsletterPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Navigation */}
-      <div className="mb-6">
+        <div className="mb-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors font-medium"
         >
           <ArrowLeft className="h-4 w-4" />
           Powrót do strony głównej
@@ -40,47 +41,150 @@ export default function NewsletterPage() {
       </div>
 
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-orange-100 rounded-full">
-            <Bell className="h-6 w-6 text-orange-600" />
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-6 shadow-lg">
+            <Bell className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold">Zapisz się do newslettera</h1>
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+            Dołącz do naszego newslettera
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Otrzymuj najlepsze prompty co tydzień prosto na swoją skrzynkę email. 
+            Bądź na bieżąco z najnowszymi trendami w świecie AI.
+          </p>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto mb-12">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">1000+</div>
+              <div className="text-sm text-gray-600">Subskrybentów</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">50+</div>
+              <div className="text-sm text-gray-600">Promptów tygodniowo</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">4.9/5</div>
+              <div className="text-sm text-gray-600">Ocena subskrybentów</div>
+            </div>
+          </div>
         </div>
-        <p className="text-muted-foreground mb-4">
-          Otrzymuj najlepsze prompty co tydzień prosto na swoją skrzynkę email
-        </p>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-800">
-          <p className="font-medium mb-2">Co otrzymasz w każdym newsletterze:</p>
-          <ul className="space-y-1">
-            <li>• Najlepsze prompty tygodnia</li>
-            <li>• Porady i wskazówki</li>
-            <li>• Nowości ze świata AI</li>
-            <li>• Ekskluzywne treści</li>
-          </ul>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Benefits Section */}
+          <div className="space-y-8">
+            <Card className="border-orange-200 bg-white/80 backdrop-blur-sm shadow-lg">
+              <CardHeader className="text-center pb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+                  <Star className="h-8 w-8 text-orange-600" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-800">Co otrzymasz w każdym newsletterze</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Zap className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">Najlepsze prompty tygodnia</h4>
+                    <p className="text-sm text-gray-600">Sprawdzone i przetestowane prompty, które działają</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <TrendingUp className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">Porady i wskazówki</h4>
+                    <p className="text-sm text-gray-600">Eksperckie porady jak pisać lepsze prompty</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">Nowości ze świata AI</h4>
+                    <p className="text-sm text-gray-600">Najnowsze informacje o narzędziach i trendach</p>
         </div>
+                </div>
+                
+                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Shield className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">Ekskluzywne treści</h4>
+                    <p className="text-sm text-gray-600">Materiały dostępne tylko dla subskrybentów</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200 bg-white/80 backdrop-blur-sm shadow-lg">
+              <CardHeader className="text-center pb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+                  <Clock className="h-8 w-8 text-orange-600" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-800">Dlaczego warto?</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <p className="text-gray-700">Oszczędzasz czas - nie musisz szukać najlepszych promptów</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <p className="text-gray-700">Zawsze na bieżąco z najnowszymi trendami</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <p className="text-gray-700">Newsletter wysyłamy co tydzień</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <p className="text-gray-700">Możesz się wypisać w każdej chwili</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <p className="text-gray-700">Nie spamujemy - tylko wartościowe treści</p>
+                </div>
+              </CardContent>
+            </Card>
       </div>
 
       {/* Newsletter Form */}
-      <Card className="border-[color:var(--main-orange)] mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Zapisz się teraz
-          </CardTitle>
+          <div className="lg:col-span-1">
+            <Card className="border-orange-200 bg-white/90 backdrop-blur-sm shadow-xl sticky top-8">
+              <CardHeader className="text-center pb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-4">
+                  <Mail className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-800">Zapisz się teraz</CardTitle>
+                <p className="text-gray-600">Dołącz do grona zadowolonych subskrybentów</p>
         </CardHeader>
-        <CardContent>
+              <CardContent className="p-8">
           {isSubmitted ? (
-            <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
-              <Check className="h-4 w-4" />
-              <AlertDescription>
-                Dziękujemy za zapisanie się do newslettera! Pierwszy email otrzymasz już w przyszłym tygodniu.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Adres email *</Label>
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+                      <Check className="h-10 w-10 text-green-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-green-800 mb-4">Zapisano pomyślnie!</h3>
+                    <p className="text-gray-600 text-lg mb-4">
+                      Dziękujemy za zapisanie się do newslettera!
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Pierwszy email otrzymasz już w przyszłym tygodniu.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-3">
+                      <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                        Adres email *
+                      </Label>
                 <Input
                   id="email"
                   name="email"
@@ -89,71 +193,38 @@ export default function NewsletterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="twoj@email.com"
-                  className="text-base"
+                        className="h-12 border-orange-200 focus:border-orange-500 focus:ring-orange-500 text-base"
                 />
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full bg-orange-500 hover:bg-orange-600" 
+                      className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300" 
                 disabled={isSubmitting}
-                size="lg"
               >
                 {isSubmitting ? (
-                  "Zapisywanie..."
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                          Zapisywanie...
+                        </div>
                 ) : (
                   <>
-                    <Mail className="h-4 w-4 mr-2" />
+                          <Mail className="h-5 w-5 mr-3" />
                     Zapisz się do newslettera
                   </>
                 )}
               </Button>
+                    
+                    <p className="text-xs text-gray-500 text-center">
+                      Zapisz się i otrzymuj najlepsze prompty co tydzień. 
+                      Możesz się wypisać w każdej chwili.
+                    </p>
             </form>
           )}
         </CardContent>
       </Card>
-
-      {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-[color:var(--main-orange)]">
-          <CardHeader>
-            <CardTitle>Dlaczego warto?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Oszczędzasz czas - nie musisz szukać najlepszych promptów</p>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Zawsze na bieżąco z najnowszymi trendami</p>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Ekskluzywne treści tylko dla subskrybentów</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-[color:var(--main-orange)]">
-          <CardHeader>
-            <CardTitle>Częstotliwość</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Newsletter wysyłamy co tydzień</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Możesz się wypisać w każdej chwili</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-              <p>Nie spamujemy - tylko wartościowe treści</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
