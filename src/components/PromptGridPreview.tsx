@@ -12,8 +12,8 @@ interface PromptGridPreviewProps {
   promptData: {
     title: string
     title_pl: string
-    content: string
-    content_pl: string
+    description: string
+    description_pl: string
     introduction?: string
     type: 'text' | 'image' | 'video'
     author?: string
@@ -28,14 +28,14 @@ export function PromptGridPreview({ promptData }: PromptGridPreviewProps) {
 
   // Używamy polskich wersji do wyświetlania
   const displayTitle = promptData.title_pl || promptData.title || "Tytuł promptu"
-  const displayContent = promptData.content_pl || promptData.content || "Treść promptu"
+  const displayContent = promptData.description_pl || promptData.description || "Treść promptu"
   const displayAuthor = promptData.author || "Admin"
   const displayTags = promptData.tags || []
 
   const handleCopy = async () => {
     try {
       // Kopiujemy tylko treść promptu (bez tytułu, bo już jest w treści)
-      await navigator.clipboard.writeText(`${promptData.content}\n${displayTags.join(" ")}\nAutor: ${displayAuthor}`)
+      await navigator.clipboard.writeText(`${promptData.description}\n${displayTags.join(" ")}\nAutor: ${displayAuthor}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -68,7 +68,7 @@ export function PromptGridPreview({ promptData }: PromptGridPreviewProps) {
               author: promptData.author,
               author_profile_image: promptData.author_profile_image,
               images: promptData.images,
-              content: promptData.content
+              description: promptData.description
             }}
           />
         </div>
