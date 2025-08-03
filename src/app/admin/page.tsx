@@ -180,7 +180,7 @@ export default function AdminPage() {
         }
         
         // Automatyczne generowanie wstępu po pobraniu danych z X
-        if (updatedData.title && updatedData.content && !updatedData.introduction) {
+        if (updatedData.title && updatedData.description && !updatedData.introduction) {
           try {
             console.log('🔄 Automatyczne generowanie wstępu po pobraniu z X...')
             const response = await fetch('/api/generate-intro', {
@@ -188,7 +188,7 @@ export default function AdminPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 title: updatedData.title,
-                description: updatedData.content
+                description: updatedData.description
               })
             })
             if (response.ok) {
