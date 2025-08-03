@@ -19,8 +19,8 @@ import { PromptGridPreview } from "@/components/PromptGridPreview"
 interface PromptData {
   title: string
   title_pl: string
-  content: string
-  content_pl: string
+  description: string
+  description_pl: string
   introduction?: string
   type: 'text' | 'image' | 'video'
   tweet_url?: string
@@ -73,8 +73,8 @@ export default function AdminPage() {
   const [promptData, setPromptData] = useState<PromptData>({
     title: "",
     title_pl: "",
-    content: "",
-    content_pl: "",
+    description: "",
+    description_pl: "",
     introduction: "",
     type: "text",
     author: "",
@@ -120,8 +120,8 @@ export default function AdminPage() {
         ...prev,
         title: "",
         title_pl: "",
-        content: "",
-        content_pl: "",
+        description: "",
+        description_pl: "",
         introduction: "",
         images: [],
         author: "",
@@ -139,8 +139,8 @@ export default function AdminPage() {
           ...promptData,
           title: autoTitle, // Zawsze używamy nowego tytułu
           title_pl: "", // Resetujemy tłumaczenie tytułu
-          content: tweetData.content,
-          content_pl: tweetData.content_pl,
+          description: tweetData.content,
+          description_pl: tweetData.content_pl,
           image_url: tweetData.image_url,
           images: tweetData.images || [], // Dodajemy wszystkie zdjęcia z tweeta
           author: tweetData.author || promptData.author,
@@ -188,7 +188,7 @@ export default function AdminPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 title: updatedData.title,
-                content: updatedData.content
+                description: updatedData.content
               })
             })
             if (response.ok) {
@@ -220,16 +220,16 @@ export default function AdminPage() {
       let finalPromptData = promptData
       
       // Tłumaczenie treści
-      if (promptType === "manual" && !promptData.content_pl && promptData.content) {
+      if (promptType === "manual" && !promptData.description_pl && promptData.description) {
         try {
           const response = await fetch('/api/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: promptData.content })
+            body: JSON.stringify({ text: promptData.description })
           })
           if (response.ok) {
             const data = await response.json()
-            finalPromptData = { ...finalPromptData, content_pl: data.translatedText }
+            finalPromptData = { ...finalPromptData, description_pl: data.translatedText }
           }
         } catch (error) {
           console.warn('Błąd podczas tłumaczenia treści:', error)
@@ -277,8 +277,8 @@ export default function AdminPage() {
               setPromptData({
           title: "",
           title_pl: "",
-          content: "",
-          content_pl: "",
+          description: "",
+          description_pl: "",
           introduction: "",
           type: "text",
           author: "",
@@ -296,7 +296,7 @@ export default function AdminPage() {
 
   // Generowanie tagów AI
   const handleGenerateTags = async () => {
-    if (!promptData.title && !promptData.content) {
+    if (!promptData.title && !promptData.description) {
       setMessage({ type: 'error', text: 'Wprowadź tytuł lub treść promptu aby wygenerować tagi' })
       return
     }
@@ -310,7 +310,7 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: promptData.title,
-          content: promptData.content
+          description: promptData.description
         })
       })
 
@@ -343,7 +343,7 @@ export default function AdminPage() {
 
   // Generowanie wstępu AI
   const handleGenerateIntro = async () => {
-    if (!promptData.title || !promptData.content) {
+    if (!promptData.title || !promptData.description) {
       setMessage({ type: 'error', text: 'Wprowadź tytuł i treść promptu aby wygenerować wstęp' })
       return
     }
@@ -357,7 +357,7 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: promptData.title,
-          content: promptData.content
+          description: promptData.description
         })
       })
 
@@ -403,8 +403,8 @@ export default function AdminPage() {
       const tweetData = await response.json()
 
       return {
-        content: tweetData.content,
-        content_pl: tweetData.content_pl, // Już przetłumaczone przez API endpoint
+        description: tweetData.content,
+        description_pl: tweetData.content_pl, // Już przetłumaczone przez API endpoint
         image_url: tweetData.image_url,
         images: tweetData.images || [], // Dodajemy pole images
         author: tweetData.author,
@@ -469,8 +469,8 @@ export default function AdminPage() {
     console.log('💾 Zapisuję prompt do Supabase:', {
       title: data.title,
       title_pl: data.title_pl,
-      description: data.content,
-      content_pl: data.content_pl,
+      description: data.description,
+      description_pl: data.description_pl,
       introduction: data.introduction,
       type: data.type,
       images: data.images,
@@ -501,8 +501,8 @@ export default function AdminPage() {
       .insert([{
         title: data.title,
         title_pl: data.title_pl,
-        description: data.content,
-        content_pl: data.content_pl,
+        description: data.description,
+        description_pl: data.description_pl,
         introduction: data.introduction,
         type: data.type,
         tweet_url: data.tweet_url,
@@ -757,7 +757,7 @@ export default function AdminPage() {
                             <Button 
                               type="button" 
                               onClick={handleGenerateIntro}
-                              disabled={isGeneratingIntro || !promptData.title || !promptData.content}
+                              disabled={isGeneratingIntro || !promptData.title || !promptData.description}
                               variant="outline"
                               size="sm"
                               className="flex items-center gap-2"
@@ -902,8 +902,8 @@ export default function AdminPage() {
                         </Label>
                         <Textarea
                           id="content"
-                          value={promptData.content}
-                          onChange={(e) => setPromptData({ ...promptData, content: e.target.value })}
+                          value={promptData.description}
+                          onChange={(e) => setPromptData({ ...promptData, description: e.target.value })}
                           placeholder="Wprowadź treść promptu, która będzie kopiowana..."
                           rows={4}
                           required
@@ -911,14 +911,14 @@ export default function AdminPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="content_pl" className="flex items-center gap-2">
+                        <Label htmlFor="description_pl" className="flex items-center gap-2">
                           <FileText className="h-4 w-4" />
                           Tłumaczenie (PL)
                         </Label>
                         <Textarea
-                          id="content_pl"
-                          value={promptData.content_pl}
-                          onChange={(e) => setPromptData({ ...promptData, content_pl: e.target.value })}
+                          id="description_pl"
+                          value={promptData.description_pl}
+                          onChange={(e) => setPromptData({ ...promptData, description_pl: e.target.value })}
                           placeholder="Polskie tłumaczenie promptu..."
                           rows={4}
                         />
@@ -1012,7 +1012,7 @@ export default function AdminPage() {
                           <Button 
                             type="button" 
                             onClick={handleGenerateTags}
-                            disabled={isGeneratingTags || (!promptData.title && !promptData.content)}
+                            disabled={isGeneratingTags || (!promptData.title && !promptData.description)}
                             variant="outline"
                             className="flex items-center gap-2"
                           >
@@ -1229,7 +1229,7 @@ export default function AdminPage() {
                             <Button 
                               type="button" 
                               onClick={handleGenerateIntro}
-                              disabled={isGeneratingIntro || !promptData.title || !promptData.content}
+                              disabled={isGeneratingIntro || !promptData.title || !promptData.description}
                               variant="outline"
                               size="sm"
                               className="flex items-center gap-2"
@@ -1374,8 +1374,8 @@ export default function AdminPage() {
                         </Label>
                         <Textarea
                           id="content-x"
-                          value={promptData.content}
-                          onChange={(e) => setPromptData({ ...promptData, content: e.target.value })}
+                          value={promptData.description}
+                          onChange={(e) => setPromptData({ ...promptData, description: e.target.value })}
                           placeholder="Wprowadź treść promptu, która będzie kopiowana..."
                           rows={4}
                           required
@@ -1383,14 +1383,14 @@ export default function AdminPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="content_pl-x" className="flex items-center gap-2">
+                        <Label htmlFor="description_pl-x" className="flex items-center gap-2">
                           <FileText className="h-4 w-4" />
                           Tłumaczenie (PL)
                         </Label>
                         <Textarea
-                          id="content_pl-x"
-                          value={promptData.content_pl}
-                          onChange={(e) => setPromptData({ ...promptData, content_pl: e.target.value })}
+                          id="description_pl-x"
+                          value={promptData.description_pl}
+                          onChange={(e) => setPromptData({ ...promptData, description_pl: e.target.value })}
                           placeholder="Polskie tłumaczenie promptu..."
                           rows={4}
                         />
@@ -1484,7 +1484,7 @@ export default function AdminPage() {
                           <Button 
                             type="button" 
                             onClick={handleGenerateTags}
-                            disabled={isGeneratingTags || (!promptData.title && !promptData.content)}
+                            disabled={isGeneratingTags || (!promptData.title && !promptData.description)}
                             variant="outline"
                             className="flex items-center gap-2"
                           >
