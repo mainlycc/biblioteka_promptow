@@ -13,8 +13,8 @@ interface PromptPreviewProps {
   promptData: {
     title: string
     title_pl: string
-    content: string
-    content_pl: string
+    description: string
+    description_pl: string
     introduction?: string
     type: 'text' | 'image' | 'video'
     author?: string
@@ -30,8 +30,8 @@ export function PromptPreview({ promptData }: PromptPreviewProps) {
 
   // Używamy polskich wersji do wyświetlania, angielskich do kopiowania
   const displayTitle = promptData.title_pl || promptData.title || "Tytuł promptu"
-  const displayContent = promptData.content_pl || promptData.content || "Treść promptu"
-  const copyContent = promptData.content || promptData.content_pl || "Treść promptu"
+  const displayContent = promptData.description_pl || promptData.description || "Treść promptu"
+  const copyContent = promptData.description || promptData.description_pl || "Treść promptu"
   const displayAuthor = promptData.author || "Admin"
   const displayTags = promptData.tags || []
 
