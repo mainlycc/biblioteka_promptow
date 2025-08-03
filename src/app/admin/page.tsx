@@ -1,27 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Download, FileText, Image, Check, AlertCircle, Lock } from "lucide-react"
+import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { PromptPreview } from "@/components/PromptPreview"
+import { PromptGridPreview } from "@/components/PromptGridPreview"
 
 interface PromptData {
   title: string
+  title_pl: string
   content: string
   content_pl: string
-  type: 'text' | 'image'
+  introduction?: string
+  type: 'text' | 'image' | 'video'
   tweet_url?: string
   image_url?: string
-  local_image?: string
+  images?: string[]
   author?: string
   author_username?: string
   author_profile_image?: string
@@ -35,42 +39,53 @@ export default function AdminPage() {
   const [loginData, setLoginData] = useState({ username: "", password: "" })
   const [loginError, setLoginError] = useState("")
   
-  const [activeTab, setActiveTab] = useState("text")
+  const [promptType, setPromptType] = useState<"manual" | "x">("manual")
+  const [previewType, setPreviewType] = useState<"detailed" | "grid">("detailed")
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
+  const [isGeneratingTags, setIsGeneratingTags] = useState(false)
+  const [isGeneratingIntro, setIsGeneratingIntro] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   
-  // Tryb tekstowy
-  const [textData, setTextData] = useState({
+  // Test połączenia z Supabase przy ładowaniu
+  useEffect(() => {
+    const testSupabaseConnection = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('prompts')
+          .select('count')
+          .limit(1)
+        
+        if (error) {
+          console.error('❌ Błąd połączenia z Supabase:', error)
+        } else {
+          console.log('✅ Połączenie z Supabase działa poprawnie')
+        }
+      } catch (error) {
+        console.error('❌ Błąd podczas testowania połączenia z Supabase:', error)
+      }
+    }
+    
+    testSupabaseConnection()
+  }, [])
+
+  // Dane promptu
+  const [promptData, setPromptData] = useState<PromptData>({
     title: "",
+    title_pl: "",
     content: "",
-    type: "text" as 'text' | 'image',
+    content_pl: "",
+    introduction: "",
+    type: "text",
     author: "",
-    tags: [] as string[]
+    tags: [],
+    images: []
   })
-  
-  // Tryb Twitter
-  const [twitterData, setTwitterData] = useState({
-    tweet_url: "",
-    type: "image" as const,
-    title: "",
-    author: ""
-  })
-  const [tweetInfo, setTweetInfo] = useState<{
-    content: string
-    content_pl: string
-    image_url?: string
-    author?: string
-    author_username?: string
-    author_profile_image?: string
-    tweet_id?: string
-    created_at?: string
-  } | null>(null)
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError("")
     
-    // Proste sprawdzenie loginu i hasła
     if (loginData.username === "admin" && loginData.password === "prompty2024") {
       setIsAuthenticated(true)
     } else {
@@ -82,6 +97,437 @@ export default function AdminPage() {
     setIsAuthenticated(false)
     setLoginData({ username: "", password: "" })
     setLoginError("")
+  }
+
+  // Pobieranie danych z X
+  const handleFetchFromX = async () => {
+    if (!promptData.tweet_url) {
+      setMessage({ type: 'error', text: 'Wprowadź URL tweeta' })
+      return
+    }
+
+    setIsFetching(true)
+    setMessage(null)
+
+    try {
+      const tweetId = extractTweetId(promptData.tweet_url)
+      if (!tweetId) {
+        throw new Error('Nieprawidłowy URL tweeta')
+      }
+
+      // Resetujemy stare dane przed pobraniem nowych
+      setPromptData(prev => ({
+        ...prev,
+        title: "",
+        title_pl: "",
+        content: "",
+        content_pl: "",
+        introduction: "",
+        images: [],
+        author: "",
+        author_username: "",
+        author_profile_image: "",
+        tags: [],
+        type: "text"
+      }))
+
+      const tweetData = await fetchTweetData(tweetId)
+      
+              // Automatyczne wypełnienie pól
+        const autoTitle = tweetData.content.split('\n')[0].slice(0, 50) + (tweetData.content.split('\n')[0].length > 50 ? '...' : '')
+        const updatedData = {
+          ...promptData,
+          title: autoTitle, // Zawsze używamy nowego tytułu
+          title_pl: "", // Resetujemy tłumaczenie tytułu
+          content: tweetData.content,
+          content_pl: tweetData.content_pl,
+          image_url: tweetData.image_url,
+          images: tweetData.images || [], // Dodajemy wszystkie zdjęcia z tweeta
+          author: tweetData.author || promptData.author,
+          author_username: tweetData.author_username,
+          author_profile_image: tweetData.author_profile_image,
+          tweet_id: tweetData.tweet_id,
+          created_at: tweetData.created_at,
+          tags: tweetData.hashtags || extractTags(tweetData.content),
+          type: (tweetData.images && tweetData.images.length > 0) ? 'image' : 'text' as 'text' | 'image' | 'video'
+        }
+      
+              console.log('📥 Otrzymane dane z API tweet:', {
+          imagesCount: tweetData.images?.length || 0,
+          images: tweetData.images,
+          type: updatedData.type
+        })
+        
+                setPromptData(updatedData)
+        
+        // Automatyczne tłumaczenie tytułu po pobraniu danych z X
+        if (updatedData.title) {
+          try {
+            console.log('🔄 Automatyczne tłumaczenie tytułu po pobraniu z X...')
+            const response = await fetch('/api/translate-title', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: updatedData.title })
+            })
+            if (response.ok) {
+              const data = await response.json()
+              console.log('✅ Tytuł przetłumaczony automatycznie')
+              setPromptData(prev => ({ ...prev, title_pl: data.translatedText }))
+            }
+          } catch (error) {
+            console.warn('⚠️ Nie udało się przetłumaczyć tytułu automatycznie:', error)
+          }
+        }
+        
+        // Automatyczne generowanie wstępu po pobraniu danych z X
+        if (updatedData.title && updatedData.content && !updatedData.introduction) {
+          try {
+            console.log('🔄 Automatyczne generowanie wstępu po pobraniu z X...')
+            const response = await fetch('/api/generate-intro', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: updatedData.title,
+                content: updatedData.content
+              })
+            })
+            if (response.ok) {
+              const data = await response.json()
+              console.log('✅ Wstęp wygenerowany automatycznie')
+              setPromptData(prev => ({ ...prev, introduction: data.introduction }))
+            }
+          } catch (error) {
+            console.warn('⚠️ Nie udało się wygenerować wstępu automatycznie:', error)
+          }
+        }
+      
+      setMessage({ type: 'success', text: 'Dane z X zostały pobrane i wypełnione!' })
+    } catch (error) {
+      setMessage({ type: 'error', text: `Błąd podczas pobierania danych: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
+    } finally {
+      setIsFetching(false)
+    }
+  }
+
+  // Zapisywanie promptu
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setMessage(null)
+
+    try {
+      // Jeśli to prompt ręczny i nie ma tłumaczenia, użyj API endpoint do tłumaczenia
+      let finalPromptData = promptData
+      
+      // Tłumaczenie treści
+      if (promptType === "manual" && !promptData.content_pl && promptData.content) {
+        try {
+          const response = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: promptData.content })
+          })
+          if (response.ok) {
+            const data = await response.json()
+            finalPromptData = { ...finalPromptData, content_pl: data.translatedText }
+          }
+        } catch (error) {
+          console.warn('Błąd podczas tłumaczenia treści:', error)
+          // Kontynuuj bez tłumaczenia
+        }
+      }
+
+      // Tłumaczenie tytułu
+      if (promptType === "manual" && !promptData.title_pl && promptData.title) {
+        console.log('🔄 Rozpoczynam tłumaczenie tytułu:', promptData.title)
+        try {
+          const response = await fetch('/api/translate-title', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: promptData.title })
+          })
+          console.log('📡 Response status:', response.status)
+          if (response.ok) {
+            const data = await response.json()
+            console.log('✅ Otrzymane tłumaczenie tytułu:', data.translatedText)
+            finalPromptData = { ...finalPromptData, title_pl: data.translatedText }
+          } else {
+            const errorData = await response.json()
+            console.error('❌ Błąd API response:', errorData)
+          }
+        } catch (error) {
+          console.warn('❌ Błąd podczas tłumaczenia tytułu:', error)
+          // Kontynuuj bez tłumaczenia
+        }
+      } else {
+        console.log('⏭️ Pomijam tłumaczenie tytułu - warunki:', {
+          promptType,
+          hasTitlePl: !!promptData.title_pl,
+          hasTitle: !!promptData.title
+        })
+      }
+
+      setPromptData(finalPromptData)
+
+      await savePrompt(finalPromptData)
+      
+      setMessage({ type: 'success', text: 'Prompt został zapisany!' })
+      
+      // Reset formularza
+              setPromptData({
+          title: "",
+          title_pl: "",
+          content: "",
+          content_pl: "",
+          introduction: "",
+          type: "text",
+          author: "",
+          tags: [],
+          images: []
+        })
+      setPromptType("manual")
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Błąd podczas zapisywania promptu' })
+      console.error('Error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Generowanie tagów AI
+  const handleGenerateTags = async () => {
+    if (!promptData.title && !promptData.content) {
+      setMessage({ type: 'error', text: 'Wprowadź tytuł lub treść promptu aby wygenerować tagi' })
+      return
+    }
+
+    setIsGeneratingTags(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/generate-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: promptData.title,
+          content: promptData.content
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        // Sprawdź czy to błąd rate limit
+        if (response.status === 429) {
+          throw new Error(`${errorData.error}\n\n${errorData.details || ''}`)
+        }
+        
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Dodaj wygenerowane tagi do istniejących (bez duplikatów)
+      const existingTags = promptData.tags || []
+      const newTags = data.tags.filter((tag: string) => !existingTags.includes(tag))
+      const allTags = [...existingTags, ...newTags]
+
+      setPromptData(prev => ({ ...prev, tags: allTags }))
+      setMessage({ type: 'success', text: `Wygenerowano ${newTags.length} nowych tagów!` })
+    } catch (error) {
+      setMessage({ type: 'error', text: `Błąd podczas generowania tagów: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
+    } finally {
+      setIsGeneratingTags(false)
+    }
+  }
+
+  // Generowanie wstępu AI
+  const handleGenerateIntro = async () => {
+    if (!promptData.title || !promptData.content) {
+      setMessage({ type: 'error', text: 'Wprowadź tytuł i treść promptu aby wygenerować wstęp' })
+      return
+    }
+
+    setIsGeneratingIntro(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/generate-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: promptData.title,
+          content: promptData.content
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        // Sprawdź czy to błąd rate limit
+        if (response.status === 429) {
+          throw new Error(`${errorData.error}\n\n${errorData.details || ''}`)
+        }
+        
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      setPromptData(prev => ({ ...prev, introduction: data.introduction }))
+      setMessage({ type: 'success', text: 'Wstęp został wygenerowany!' })
+    } catch (error) {
+      setMessage({ type: 'error', text: `Błąd podczas generowania wstępu: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
+    } finally {
+      setIsGeneratingIntro(false)
+    }
+  }
+
+  // Funkcje pomocnicze
+
+  const extractTweetId = (url: string): string | null => {
+    const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/)
+    return match ? match[1] : null
+  }
+
+  const fetchTweetData = async (tweetId: string) => {
+    try {
+      // Wywołujemy nasze API endpoint po stronie serwera
+      const response = await fetch(`/api/tweet/${tweetId}`)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
+      const tweetData = await response.json()
+
+      return {
+        content: tweetData.content,
+        content_pl: tweetData.content_pl, // Już przetłumaczone przez API endpoint
+        image_url: tweetData.image_url,
+        images: tweetData.images || [], // Dodajemy pole images
+        author: tweetData.author,
+        author_username: tweetData.author_username,
+        author_profile_image: tweetData.author_profile_image,
+        created_at: tweetData.created_at,
+        tweet_id: tweetData.tweet_id,
+        hashtags: tweetData.hashtags
+      }
+    } catch (error) {
+      console.error('Error fetching tweet:', error)
+      throw new Error(`Błąd podczas pobierania tweeta: ${error instanceof Error ? error.message : 'Nieznany błąd'}`)
+    }
+  }
+
+  const extractTags = (content: string): string[] => {
+    const hashtags = content.match(/#\w+/g) || []
+    return hashtags.map(tag => tag.slice(1))
+  }
+
+  const addTag = (tag: string) => {
+    if (tag.trim() && !promptData.tags?.includes(tag.trim())) {
+      setPromptData(prev => ({ 
+        ...prev, 
+        tags: [...(prev.tags || []), tag.trim()] 
+      }))
+    }
+  }
+
+    const removeTag = (tagToRemove: string) => {
+    setPromptData(prev => ({
+      ...prev,
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
+    }))
+  }
+
+  // Funkcje do zarządzania zdjęciami
+  const addImage = (imageUrl: string) => {
+    if (imageUrl.trim() && !promptData.images?.includes(imageUrl.trim())) {
+      setPromptData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), imageUrl.trim()]
+      }))
+    }
+  }
+
+  const removeImage = (imageUrlToRemove: string) => {
+    setPromptData(prev => ({
+      ...prev,
+      images: prev.images?.filter(img => img !== imageUrlToRemove) || []
+    }))
+  }
+
+  const updateImage = (index: number, newUrl: string) => {
+    setPromptData(prev => ({
+      ...prev,
+      images: prev.images?.map((img, i) => i === index ? newUrl : img) || []
+    }))
+  }
+
+  const savePrompt = async (data: PromptData) => {
+    console.log('💾 Zapisuję prompt do Supabase:', {
+      title: data.title,
+      title_pl: data.title_pl,
+      description: data.content,
+      content_pl: data.content_pl,
+      introduction: data.introduction,
+      type: data.type,
+      images: data.images,
+      author: data.author,
+      tags: data.tags
+    })
+
+    // Sprawdzamy strukturę tabeli przed zapisem
+    try {
+      const { data: tableInfo, error: tableError } = await supabase
+        .from('prompts')
+        .select('*')
+        .limit(0)
+      
+      if (tableError) {
+        console.error('❌ Błąd struktury tabeli:', tableError)
+        throw new Error(`Błąd struktury tabeli: ${tableError.message}`)
+      }
+      
+      console.log('✅ Struktura tabeli jest poprawna')
+    } catch (error) {
+      console.error('❌ Błąd podczas sprawdzania struktury tabeli:', error)
+      throw error
+    }
+
+    const { error } = await supabase
+      .from('prompts')
+      .insert([{
+        title: data.title,
+        title_pl: data.title_pl,
+        description: data.content,
+        content_pl: data.content_pl,
+        introduction: data.introduction,
+        type: data.type,
+        tweet_url: data.tweet_url,
+        image_url: data.image_url,
+        images: data.images,
+        author: data.author || 'Admin',
+        author_username: data.author_username,
+        author_profile_image: data.author_profile_image,
+        tweet_id: data.tweet_id,
+        tags: data.tags || [],
+        created_at: new Date().toISOString()
+      }])
+
+    if (error) {
+      console.error('❌ Błąd podczas zapisywania do Supabase:', error)
+      console.error('❌ Szczegóły błędu:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
+      throw error
+    }
+    
+    console.log('✅ Prompt został zapisany do Supabase')
   }
 
   // Jeśli nie jest zalogowany, pokaż formularz logowania
@@ -150,190 +596,6 @@ export default function AdminPage() {
     )
   }
 
-  const handleTextSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage(null)
-
-    try {
-      // Symulacja tłumaczenia API
-      const content_pl = await translateText(textData.content)
-      
-      const promptData: PromptData = {
-        title: textData.title,
-        content: textData.content,
-        content_pl,
-        type: textData.type,
-        author: textData.author,
-        tags: textData.tags
-      }
-
-      await savePrompt(promptData)
-      
-      setMessage({ type: 'success', text: 'Prompt tekstowy został zapisany!' })
-      setTextData({ title: "", content: "", type: "text", author: "", tags: [] })
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Błąd podczas zapisywania promptu' })
-      console.error('Error:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleTwitterFetch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage(null)
-
-    try {
-      const tweetId = extractTweetId(twitterData.tweet_url)
-      if (!tweetId) {
-        throw new Error('Nieprawidłowy URL tweeta')
-      }
-
-      // Symulacja pobierania danych z Twittera
-      const tweetData = await fetchTweetData(tweetId)
-      setTweetInfo(tweetData)
-      
-      setMessage({ type: 'success', text: 'Dane z Twittera zostały pobrane!' })
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Błąd podczas pobierania danych z Twittera' })
-      console.error('Error:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleTwitterSubmit = async () => {
-    if (!tweetInfo) return
-    
-    setIsLoading(true)
-    setMessage(null)
-
-    try {
-      const promptData: PromptData = {
-        title: twitterData.title || tweetInfo.content.slice(0, 100),
-        content: tweetInfo.content,
-        content_pl: tweetInfo.content_pl,
-        type: twitterData.type,
-        tweet_url: twitterData.tweet_url,
-        image_url: tweetInfo.image_url,
-        author: twitterData.author || tweetInfo.author,
-        author_username: tweetInfo.author_username,
-        author_profile_image: tweetInfo.author_profile_image,
-        tweet_id: tweetInfo.tweet_id,
-        created_at: tweetInfo.created_at,
-        tags: extractTags(tweetInfo.content)
-      }
-
-      await savePrompt(promptData)
-      
-      setMessage({ type: 'success', text: 'Prompt z Twittera został zapisany!' })
-      setTwitterData({ tweet_url: "", type: "image", title: "", author: "" })
-      setTweetInfo(null)
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Błąd podczas zapisywania promptu' })
-      console.error('Error:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Funkcje pomocnicze
-  const translateText = async (text: string): Promise<string> => {
-    // Symulacja tłumaczenia - w rzeczywistości użyj API tłumaczenia
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    return `[PL] ${text}`
-  }
-
-  const extractTweetId = (url: string): string | null => {
-    // Obsługuje zarówno twitter.com jak i x.com
-    const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/)
-    return match ? match[1] : null
-  }
-
-  const fetchTweetData = async (tweetId: string) => {
-    try {
-      // X API v2 Post Lookup endpoint
-      const response = await fetch(`https://api.twitter.com/2/tweets/${tweetId}?expansions=author_id,attachments.media_keys&user.fields=name,username,profile_image_url&media.fields=url,preview_image_url,type`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TWITTER_BEARER_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`X API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      
-      if (!data.data) {
-        throw new Error('Tweet nie został znaleziony')
-      }
-
-      const tweet = data.data
-      const users = data.includes?.users || []
-      const media = data.includes?.media || []
-      
-      const author = users.find((user: any) => user.id === tweet.author_id)
-      const images = media.filter((item: any) => item.type === 'photo')
-
-      // Tłumaczenie treści
-      const content_pl = await translateText(tweet.text)
-
-      return {
-        content: tweet.text,
-        content_pl,
-        image_url: images.length > 0 ? images[0].url : undefined,
-        author: author ? `${author.name} (@${author.username})` : 'Nieznany autor',
-        author_username: author?.username,
-        author_profile_image: author?.profile_image_url,
-        created_at: tweet.created_at,
-        tweet_id: tweetId
-      }
-    } catch (error) {
-      console.error('Error fetching tweet:', error)
-      throw new Error(`Błąd podczas pobierania tweeta: ${error instanceof Error ? error.message : 'Nieznany błąd'}`)
-    }
-  }
-
-  const extractTags = (content: string): string[] => {
-    const hashtags = content.match(/#\w+/g) || []
-    return hashtags.map(tag => tag.slice(1))
-  }
-
-  const addTag = (tag: string) => {
-    if (tag.trim() && !textData.tags.includes(tag.trim())) {
-      setTextData({ ...textData, tags: [...textData.tags, tag.trim()] })
-    }
-  }
-
-  const removeTag = (tagToRemove: string) => {
-    setTextData({ ...textData, tags: textData.tags.filter(tag => tag !== tagToRemove) })
-  }
-
-  const savePrompt = async (data: PromptData) => {
-    const { error } = await supabase
-      .from('prompts')
-      .insert([{
-        title: data.title,
-        description: data.content,
-        content_pl: data.content_pl,
-        type: data.type,
-        tweet_url: data.tweet_url,
-        image_url: data.image_url,
-        author: data.author || 'Admin',
-        author_username: data.author_username,
-        author_profile_image: data.author_profile_image,
-        tweet_id: data.tweet_id,
-        tags: data.tags || [],
-        created_at: new Date().toISOString()
-      }])
-
-    if (error) throw error
-  }
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Navigation */}
@@ -368,251 +630,953 @@ export default function AdminPage() {
         </Alert>
       )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
-          <TabsTrigger 
-            value="text" 
-            className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
-          >
-            <FileText className="h-4 w-4" />
-            Prompt tekstowy
-          </TabsTrigger>
-          <TabsTrigger 
-            value="twitter" 
-            className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
-          >
-            <Image className="h-4 w-4" />
-            Z Twittera
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Tryb tekstowy */}
-        <TabsContent value="text">
-          <Card className="border-[color:var(--main-orange)]">
-            <CardHeader>
-              <CardTitle>Dodaj prompt tekstowy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleTextSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Tytuł promptu *</Label>
-                  <Input
-                    id="title"
-                    value={textData.title}
-                    onChange={(e) => setTextData({ ...textData, title: e.target.value })}
-                    placeholder="Wprowadź tytuł promptu..."
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="content">Treść promptu (do kopiowania) *</Label>
-                  <Textarea
-                    id="content"
-                    value={textData.content}
-                    onChange={(e) => setTextData({ ...textData, content: e.target.value })}
-                    placeholder="Wprowadź treść promptu, która będzie kopiowana..."
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="author">Autor</Label>
-                  <Input
-                    id="author"
-                    value={textData.author}
-                    onChange={(e) => setTextData({ ...textData, author: e.target.value })}
-                    placeholder="Wprowadź nazwę autora..."
-                  />
-                </div>
+      {/* Main Card */}
+      <Card className="border-[color:var(--main-orange)]">
+        <CardHeader>
+          <CardTitle>Dodaj nowy prompt</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Type Selection */}
+            <div className="space-y-4">
+              <Label>Typ promptu</Label>
+              <Tabs value={promptType} onValueChange={(value) => setPromptType(value as "manual" | "x")} defaultValue="manual" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
+                  <TabsTrigger 
+                    value="manual" 
+                    className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Prompt ręczny
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="x" 
+                    className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+                  >
+                    <X className="h-4 w-4" />
+                    Z X (Twitter)
+                  </TabsTrigger>
+                </TabsList>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="type">Typ</Label>
-                  <Select value={textData.type} onValueChange={(value: 'text' | 'image') => setTextData({ ...textData, type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">Tekstowy</SelectItem>
-                      <SelectItem value="image">Graficzny</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tags">Tagi</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="tags"
-                      placeholder="Dodaj tag i naciśnij Enter..."
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          addTag(e.currentTarget.value)
-                          e.currentTarget.value = ''
-                        }
-                      }}
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={() => {
-                        const input = document.getElementById('tags') as HTMLInputElement
-                        if (input) {
-                          addTag(input.value)
-                          input.value = ''
-                        }
-                      }}
-                    >
-                      Dodaj
-                    </Button>
-                  </div>
-                  {textData.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {textData.tags.map((tag, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline" 
-                          className="cursor-pointer hover:bg-red-50 hover:text-red-600"
-                          onClick={() => removeTag(tag)}
-                        >
-                          {tag} ×
-                        </Badge>
-                      ))}
+                <TabsContent value="manual" className="mt-4">
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-50 rounded-lg border">
+                      <p className="text-sm text-gray-600">Wprowadź dane promptu ręcznie</p>
                     </div>
-                  )}
-                </div>
+                    
+                    {/* Form Fields */}
+                    <div className="space-y-4 p-4 bg-white rounded-lg border">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Dane promptu
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="title" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Tytuł promptu *
+                          </Label>
+                          <Input
+                            id="title"
+                            value={promptData.title}
+                            onChange={(e) => setPromptData({ ...promptData, title: e.target.value })}
+                            placeholder="Wprowadź tytuł promptu..."
+                            required
+                          />
+                        </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    "Zapisywanie..."
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Zapisz prompt
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                        <div className="space-y-2">
+                          <Label htmlFor="title_pl" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Tłumaczenie tytułu (PL)
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="title_pl"
+                              value={promptData.title_pl}
+                              onChange={(e) => setPromptData({ ...promptData, title_pl: e.target.value })}
+                              placeholder="Polskie tłumaczenie tytułu..."
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button" 
+                              onClick={async () => {
+                                if (!promptData.title) {
+                                  setMessage({ type: 'error', text: 'Wprowadź najpierw tytuł angielski' })
+                                  return
+                                }
+                                try {
+                                  console.log('🔄 Testowe tłumaczenie tytułu:', promptData.title)
+                                  const response = await fetch('/api/translate-title', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ text: promptData.title })
+                                  })
+                                  if (response.ok) {
+                                    const data = await response.json()
+                                    console.log('✅ Testowe tłumaczenie otrzymane:', data.translatedText)
+                                    setPromptData({ ...promptData, title_pl: data.translatedText })
+                                    setMessage({ type: 'success', text: 'Tytuł został przetłumaczony!' })
+                                  } else {
+                                    const errorData = await response.json()
+                                    console.error('❌ Błąd testowego tłumaczenia:', errorData)
+                                    setMessage({ type: 'error', text: 'Błąd podczas tłumaczenia tytułu' })
+                                  }
+                                } catch (error) {
+                                  console.error('❌ Błąd testowego tłumaczenia:', error)
+                                  setMessage({ type: 'error', text: 'Błąd podczas tłumaczenia tytułu' })
+                                }
+                              }}
+                              disabled={!promptData.title}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2 whitespace-nowrap"
+                            >
+                              <Sparkles className="h-4 w-4" />
+                              Przetłumacz
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
 
-        {/* Tryb Twitter */}
-        <TabsContent value="twitter">
-          <Card className="border-[color:var(--main-orange)]">
-            <CardHeader>
-              <CardTitle>Pobierz prompt z Twittera</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleTwitterFetch} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tweet_url">URL tweeta *</Label>
-                  <Input
-                    id="tweet_url"
-                    type="url"
-                    value={twitterData.tweet_url}
-                    onChange={(e) => setTwitterData({ ...twitterData, tweet_url: e.target.value })}
-                    placeholder="https://x.com/user/status/123456789 lub https://twitter.com/user/status/123456789"
-                    required
-                  />
-                </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="introduction" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Wstęp (styl bloga)
+                        </Label>
+                        <div className="flex flex-col gap-2">
+                          <Textarea
+                            id="introduction"
+                            value={promptData.introduction || ""}
+                            onChange={(e) => setPromptData({ ...promptData, introduction: e.target.value })}
+                            placeholder="Wstęp w stylu posta blogowego (zostanie wygenerowany automatycznie jeśli pozostawisz puste)..."
+                            rows={6}
+                          />
+                          <div className="flex justify-end">
+                            <Button 
+                              type="button" 
+                              onClick={handleGenerateIntro}
+                              disabled={isGeneratingIntro || !promptData.title || !promptData.content}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2"
+                            >
+                              {isGeneratingIntro ? (
+                                "Generowanie..."
+                              ) : (
+                                <>
+                                  <Sparkles className="h-4 w-4" />
+                                  Generuj wstęp AI
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    "Pobieranie..."
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4 mr-2" />
-                      Pobierz z Twittera
-                    </>
-                  )}
-                </Button>
-              </form>
+                                               <div className="space-y-2">
+                           <Label className="flex items-center gap-2">
+                             <ImageIcon className="h-4 w-4" />
+                             Typ promptu
+                           </Label>
+                           <RadioGroup 
+                             value={promptData.type} 
+                             onValueChange={(value: 'text' | 'image' | 'video') => setPromptData({ ...promptData, type: value })}
+                             className="flex flex-row space-x-6"
+                           >
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="text" 
+                                 id="text" 
+                               />
+                               <Label htmlFor="text" className="text-sm font-normal cursor-pointer">
+                                 Tekstowy
+                               </Label>
+                             </div>
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="image" 
+                                 id="image" 
+                               />
+                               <Label htmlFor="image" className="text-sm font-normal cursor-pointer">
+                                 Graficzny
+                               </Label>
+                             </div>
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="video" 
+                                 id="video" 
+                               />
+                               <Label htmlFor="video" className="text-sm font-normal cursor-pointer">
+                                 Filmowy
+                               </Label>
+                             </div>
+                           </RadioGroup>
+                         </div>
 
-              {/* Podgląd danych z Twittera */}
-              {tweetInfo && (
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-                  <h3 className="font-semibold mb-3">Podgląd danych z X (Twitter):</h3>
-                  
-                  <div className="space-y-4 mb-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="twitter_title">Tytuł promptu</Label>
-                      <Input
-                        id="twitter_title"
-                        value={twitterData.title}
-                        onChange={(e) => setTwitterData({ ...twitterData, title: e.target.value })}
-                        placeholder="Wprowadź tytuł promptu (opcjonalnie)..."
-                      />
-                    </div>
+                         {/* Zdjęcia dla promptów graficznych */}
+                         {promptData.type === 'image' && (
+                           <div className="space-y-2">
+                             <Label className="flex items-center gap-2">
+                               <ImageIcon className="h-4 w-4" />
+                               Zdjęcia (1-4)
+                             </Label>
+                             <div className="space-y-3">
+                               {/* Dodawanie nowego zdjęcia */}
+                               <div className="flex gap-2">
+                                 <Input
+                                   placeholder="https://example.com/image.jpg"
+                                   onKeyPress={(e) => {
+                                     if (e.key === 'Enter') {
+                                       e.preventDefault()
+                                       const input = e.target as HTMLInputElement
+                                       if (input.value.trim() && (promptData.images?.length || 0) < 4) {
+                                         addImage(input.value)
+                                         input.value = ''
+                                       }
+                                     }
+                                   }}
+                                   className="flex-1"
+                                 />
+                                 <Button
+                                   type="button"
+                                   onClick={() => {
+                                     const input = document.querySelector('input[placeholder*="example.com"]') as HTMLInputElement
+                                     if (input?.value.trim() && (promptData.images?.length || 0) < 4) {
+                                       addImage(input.value)
+                                       input.value = ''
+                                     }
+                                   }}
+                                   disabled={(promptData.images?.length || 0) >= 4}
+                                   size="sm"
+                                   variant="outline"
+                                 >
+                                   Dodaj
+                                 </Button>
+                               </div>
+                               
+                               {/* Lista zdjęć */}
+                               {promptData.images && promptData.images.length > 0 && (
+                                 <div className="space-y-2">
+                                   {promptData.images.map((imageUrl, index) => (
+                                     <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
+                                       <img
+                                         src={imageUrl}
+                                         alt={`Zdjęcie ${index + 1}`}
+                                         className="w-12 h-12 object-cover rounded border"
+                                         onError={(e) => {
+                                           e.currentTarget.style.display = 'none'
+                                         }}
+                                       />
+                                       <Input
+                                         value={imageUrl}
+                                         onChange={(e) => updateImage(index, e.target.value)}
+                                         className="flex-1"
+                                       />
+                                       <Button
+                                         type="button"
+                                         onClick={() => removeImage(imageUrl)}
+                                         size="sm"
+                                         variant="outline"
+                                         className="text-red-600 hover:text-red-700"
+                                       >
+                                         Usuń
+                                       </Button>
+                                     </div>
+                                   ))}
+                                 </div>
+                               )}
+                               
+                               <div className="text-xs text-gray-500">
+                                 Maksymalnie 4 zdjęcia. Układ będzie automatycznie dostosowany do liczby zdjęć.
+                               </div>
+                             </div>
+                           </div>
+                         )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="twitter_author">Autor</Label>
-                      <Input
-                        id="twitter_author"
-                        value={twitterData.author}
-                        onChange={(e) => setTwitterData({ ...twitterData, author: e.target.value })}
-                        placeholder="Wprowadź nazwę autora (opcjonalnie)..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Treść:</strong> {tweetInfo.content}</p>
-                    <p><strong>Tłumaczenie:</strong> {tweetInfo.content_pl}</p>
-                    {tweetInfo.author && (
-                      <p><strong>Autor z Twittera:</strong> {tweetInfo.author}</p>
-                    )}
-                    {tweetInfo.author_username && (
-                      <p><strong>Username:</strong> @{tweetInfo.author_username}</p>
-                    )}
-                    {tweetInfo.tweet_id && (
-                      <p><strong>Tweet ID:</strong> {tweetInfo.tweet_id}</p>
-                    )}
-                    {tweetInfo.created_at && (
-                      <p><strong>Data utworzenia:</strong> {new Date(tweetInfo.created_at).toLocaleString('pl-PL')}</p>
-                    )}
-                    {tweetInfo.image_url && (
-                      <div>
-                        <p><strong>Obrazek:</strong></p>
-                        <img 
-                          src={tweetInfo.image_url} 
-                          alt="Obrazek z tweeta" 
-                          className="mt-2 max-w-full h-32 object-cover rounded border"
+                      <div className="space-y-2">
+                        <Label htmlFor="content" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Treść promptu (do kopiowania) *
+                        </Label>
+                        <Textarea
+                          id="content"
+                          value={promptData.content}
+                          onChange={(e) => setPromptData({ ...promptData, content: e.target.value })}
+                          placeholder="Wprowadź treść promptu, która będzie kopiowana..."
+                          rows={4}
+                          required
                         />
                       </div>
-                    )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="content_pl" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Tłumaczenie (PL)
+                        </Label>
+                        <Textarea
+                          id="content_pl"
+                          value={promptData.content_pl}
+                          onChange={(e) => setPromptData({ ...promptData, content_pl: e.target.value })}
+                          placeholder="Polskie tłumaczenie promptu..."
+                          rows={4}
+                        />
+                      </div>
+
+                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="author" className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Autor
+                            </Label>
+                            <Input
+                              id="author"
+                              value={promptData.author}
+                              onChange={(e) => setPromptData({ ...promptData, author: e.target.value })}
+                              placeholder="Wprowadź nazwę autora..."
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="author_username" className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Username autora
+                            </Label>
+                            <Input
+                              id="author_username"
+                              value={promptData.author_username || ""}
+                              onChange={(e) => setPromptData({ ...promptData, author_username: e.target.value })}
+                              placeholder="@username"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="author_profile_image" className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Zdjęcie profilowe autora
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="author_profile_image"
+                              value={promptData.author_profile_image || ""}
+                              onChange={(e) => setPromptData({ ...promptData, author_profile_image: e.target.value })}
+                              placeholder="https://example.com/profile-image.jpg"
+                              className="flex-1"
+                            />
+                            {promptData.author_profile_image && (
+                              <div className="flex items-center gap-2">
+                                <img 
+                                  src={promptData.author_profile_image} 
+                                  alt="Zdjęcie profilowe" 
+                                  className="h-8 w-8 rounded-full object-cover border"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="tags" className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Tagi
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="tags"
+                            placeholder="Dodaj tag i naciśnij Enter..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addTag(e.currentTarget.value)
+                                e.currentTarget.value = ''
+                              }
+                            }}
+                          />
+                          <Button 
+                            type="button" 
+                            onClick={() => {
+                              const input = document.getElementById('tags') as HTMLInputElement
+                              if (input) {
+                                addTag(input.value)
+                                input.value = ''
+                              }
+                            }}
+                          >
+                            Dodaj
+                          </Button>
+                          <Button 
+                            type="button" 
+                            onClick={handleGenerateTags}
+                            disabled={isGeneratingTags || (!promptData.title && !promptData.content)}
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            {isGeneratingTags ? (
+                              "Generowanie..."
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Generuj AI
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        {promptData.tags && promptData.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {promptData.tags.map((tag, index) => (
+                              <Badge 
+                                key={index} 
+                                variant="outline" 
+                                className="cursor-pointer hover:bg-red-50 hover:text-red-600"
+                                onClick={() => removeTag(tag)}
+                              >
+                                {tag} ×
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  <Button 
-                    onClick={handleTwitterSubmit}
-                    className="mt-4 w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      "Zapisywanie..."
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Zapisz prompt z X (Twitter)
-                      </>
-                    )}
-                  </Button>
-                </div>
+                </TabsContent>
+                
+                <TabsContent value="x" className="mt-4">
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="space-y-2">
+                        <Label htmlFor="tweet_url" className="flex items-center gap-2">
+                          <LinkIcon className="h-4 w-4" />
+                          URL tweeta z X
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="tweet_url"
+                            type="url"
+                            value={promptData.tweet_url || ""}
+                            onChange={(e) => setPromptData({ ...promptData, tweet_url: e.target.value })}
+                            placeholder="https://x.com/user/status/123456789"
+                            className="flex-1"
+                          />
+                          <Button 
+                            type="button"
+                            onClick={handleFetchFromX}
+                            disabled={isFetching || !promptData.tweet_url}
+                            className="flex items-center gap-2"
+                          >
+                            {isFetching ? (
+                              "Pobieranie..."
+                            ) : (
+                              <>
+                                <Download className="h-4 w-4" />
+                                Pobierz
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* X-specific fields */}
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <X className="h-4 w-4" />
+                        Informacje z X
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="tweet_id" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Tweet ID
+                          </Label>
+                          <Input
+                            id="tweet_id"
+                            value={promptData.tweet_id || ""}
+                            onChange={(e) => setPromptData({ ...promptData, tweet_id: e.target.value })}
+                            placeholder="ID tweeta"
+                            readOnly
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="created_at" className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Data utworzenia
+                          </Label>
+                          <Input
+                            id="created_at"
+                            value={promptData.created_at ? new Date(promptData.created_at).toLocaleString('pl-PL') : ""}
+                            placeholder="Data utworzenia tweeta"
+                            readOnly
+                          />
+                        </div>
+                      </div>
+
+                      {promptData.image_url && (
+                        <div className="space-y-2">
+                          <Label>Obrazek z tweeta</Label>
+                          <div className="flex items-center gap-4">
+                            <img 
+                              src={promptData.image_url} 
+                              alt="Obrazek z tweeta" 
+                              className="h-20 w-20 object-cover rounded border"
+                            />
+                            <Input
+                              value={promptData.image_url}
+                              onChange={(e) => setPromptData({ ...promptData, image_url: e.target.value })}
+                              placeholder="URL obrazka"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Form Fields */}
+                    <div className="space-y-4 p-4 bg-white rounded-lg border">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Dane promptu
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="title-x" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Tytuł promptu *
+                          </Label>
+                          <Input
+                            id="title-x"
+                            value={promptData.title}
+                            onChange={(e) => setPromptData({ ...promptData, title: e.target.value })}
+                            placeholder="Wprowadź tytuł promptu..."
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="title_pl-x" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Tłumaczenie tytułu (PL)
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="title_pl-x"
+                              value={promptData.title_pl}
+                              onChange={(e) => setPromptData({ ...promptData, title_pl: e.target.value })}
+                              placeholder="Polskie tłumaczenie tytułu..."
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button" 
+                              onClick={async () => {
+                                if (!promptData.title) {
+                                  setMessage({ type: 'error', text: 'Wprowadź najpierw tytuł angielski' })
+                                  return
+                                }
+                                try {
+                                  console.log('🔄 Testowe tłumaczenie tytułu:', promptData.title)
+                                  const response = await fetch('/api/translate-title', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ text: promptData.title })
+                                  })
+                                  if (response.ok) {
+                                    const data = await response.json()
+                                    console.log('✅ Testowe tłumaczenie otrzymane:', data.translatedText)
+                                    setPromptData({ ...promptData, title_pl: data.translatedText })
+                                    setMessage({ type: 'success', text: 'Tytuł został przetłumaczony!' })
+                                  } else {
+                                    const errorData = await response.json()
+                                    console.error('❌ Błąd testowego tłumaczenia:', errorData)
+                                    setMessage({ type: 'error', text: 'Błąd podczas tłumaczenia tytułu' })
+                                  }
+                                } catch (error) {
+                                  console.error('❌ Błąd testowego tłumaczenia:', error)
+                                  setMessage({ type: 'error', text: 'Błąd podczas tłumaczenia tytułu' })
+                                }
+                              }}
+                              disabled={!promptData.title}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2 whitespace-nowrap"
+                            >
+                              <Sparkles className="h-4 w-4" />
+                              Przetłumacz
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="introduction-x" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Wstęp (styl bloga)
+                        </Label>
+                        <div className="flex flex-col gap-2">
+                          <Textarea
+                            id="introduction-x"
+                            value={promptData.introduction || ""}
+                            onChange={(e) => setPromptData({ ...promptData, introduction: e.target.value })}
+                            placeholder="Wstęp w stylu posta blogowego (zostanie wygenerowany automatycznie jeśli pozostawisz puste)..."
+                            rows={6}
+                          />
+                          <div className="flex justify-end">
+                            <Button 
+                              type="button" 
+                              onClick={handleGenerateIntro}
+                              disabled={isGeneratingIntro || !promptData.title || !promptData.content}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2"
+                            >
+                              {isGeneratingIntro ? (
+                                "Generowanie..."
+                              ) : (
+                                <>
+                                  <Sparkles className="h-4 w-4" />
+                                  Generuj wstęp AI
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                                               <div className="space-y-2">
+                           <Label className="flex items-center gap-2">
+                             <ImageIcon className="h-4 w-4" />
+                             Typ promptu
+                           </Label>
+                           <RadioGroup 
+                             value={promptData.type} 
+                             onValueChange={(value: 'text' | 'image' | 'video') => setPromptData({ ...promptData, type: value })}
+                             className="flex flex-row space-x-6"
+                           >
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="text" 
+                                 id="text-x" 
+                               />
+                               <Label htmlFor="text-x" className="text-sm font-normal cursor-pointer">
+                                 Tekstowy
+                               </Label>
+                             </div>
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="image" 
+                                 id="image-x" 
+                               />
+                               <Label htmlFor="image-x" className="text-sm font-normal cursor-pointer">
+                                 Graficzny
+                               </Label>
+                             </div>
+                             <div className="flex items-center space-x-2">
+                               <RadioGroupItem 
+                                 value="video" 
+                                 id="video-x" 
+                               />
+                               <Label htmlFor="video-x" className="text-sm font-normal cursor-pointer">
+                                 Filmowy
+                               </Label>
+                             </div>
+                           </RadioGroup>
+                         </div>
+
+                         {/* Zdjęcia dla promptów graficznych */}
+                         {promptData.type === 'image' && (
+                           <div className="space-y-2">
+                             <Label className="flex items-center gap-2">
+                               <ImageIcon className="h-4 w-4" />
+                               Zdjęcia (1-4)
+                             </Label>
+                             <div className="space-y-3">
+                               {/* Dodawanie nowego zdjęcia */}
+                               <div className="flex gap-2">
+                                 <Input
+                                   placeholder="https://example.com/image.jpg"
+                                   onKeyPress={(e) => {
+                                     if (e.key === 'Enter') {
+                                       e.preventDefault()
+                                       const input = e.target as HTMLInputElement
+                                       if (input.value.trim() && (promptData.images?.length || 0) < 4) {
+                                         addImage(input.value)
+                                         input.value = ''
+                                       }
+                                     }
+                                   }}
+                                   className="flex-1"
+                                 />
+                                 <Button
+                                   type="button"
+                                   onClick={() => {
+                                     const input = document.querySelector('input[placeholder*="example.com"]') as HTMLInputElement
+                                     if (input?.value.trim() && (promptData.images?.length || 0) < 4) {
+                                       addImage(input.value)
+                                       input.value = ''
+                                     }
+                                   }}
+                                   disabled={(promptData.images?.length || 0) >= 4}
+                                   size="sm"
+                                   variant="outline"
+                                 >
+                                   Dodaj
+                                 </Button>
+                               </div>
+                               
+                               {/* Lista zdjęć */}
+                               {promptData.images && promptData.images.length > 0 && (
+                                 <div className="space-y-2">
+                                   {promptData.images.map((imageUrl, index) => (
+                                     <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
+                                       <img
+                                         src={imageUrl}
+                                         alt={`Zdjęcie ${index + 1}`}
+                                         className="w-12 h-12 object-cover rounded border"
+                                         onError={(e) => {
+                                           e.currentTarget.style.display = 'none'
+                                         }}
+                                       />
+                                       <Input
+                                         value={imageUrl}
+                                         onChange={(e) => updateImage(index, e.target.value)}
+                                         className="flex-1"
+                                       />
+                                       <Button
+                                         type="button"
+                                         onClick={() => removeImage(imageUrl)}
+                                         size="sm"
+                                         variant="outline"
+                                         className="text-red-600 hover:text-red-700"
+                                       >
+                                         Usuń
+                                       </Button>
+                                     </div>
+                                   ))}
+                                 </div>
+                               )}
+                               
+                               <div className="text-xs text-gray-500">
+                                 Maksymalnie 4 zdjęcia. Układ będzie automatycznie dostosowany do liczby zdjęć.
+                               </div>
+                             </div>
+                           </div>
+                         )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="content-x" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Treść promptu (do kopiowania) *
+                        </Label>
+                        <Textarea
+                          id="content-x"
+                          value={promptData.content}
+                          onChange={(e) => setPromptData({ ...promptData, content: e.target.value })}
+                          placeholder="Wprowadź treść promptu, która będzie kopiowana..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="content_pl-x" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Tłumaczenie (PL)
+                        </Label>
+                        <Textarea
+                          id="content_pl-x"
+                          value={promptData.content_pl}
+                          onChange={(e) => setPromptData({ ...promptData, content_pl: e.target.value })}
+                          placeholder="Polskie tłumaczenie promptu..."
+                          rows={4}
+                        />
+                      </div>
+
+                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="author-x" className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Autor
+                            </Label>
+                            <Input
+                              id="author-x"
+                              value={promptData.author}
+                              onChange={(e) => setPromptData({ ...promptData, author: e.target.value })}
+                              placeholder="Wprowadź nazwę autora..."
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="author_username-x" className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Username autora
+                            </Label>
+                            <Input
+                              id="author_username-x"
+                              value={promptData.author_username || ""}
+                              onChange={(e) => setPromptData({ ...promptData, author_username: e.target.value })}
+                              placeholder="@username"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="author_profile_image-x" className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Zdjęcie profilowe autora
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="author_profile_image-x"
+                              value={promptData.author_profile_image || ""}
+                              onChange={(e) => setPromptData({ ...promptData, author_profile_image: e.target.value })}
+                              placeholder="https://example.com/profile-image.jpg"
+                              className="flex-1"
+                            />
+                            {promptData.author_profile_image && (
+                              <div className="flex items-center gap-2">
+                                <img 
+                                  src={promptData.author_profile_image} 
+                                  alt="Zdjęcie profilowe" 
+                                  className="h-8 w-8 rounded-full object-cover border"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="tags-x" className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Tagi
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="tags-x"
+                            placeholder="Dodaj tag i naciśnij Enter..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addTag(e.currentTarget.value)
+                                e.currentTarget.value = ''
+                              }
+                            }}
+                          />
+                          <Button 
+                            type="button" 
+                            onClick={() => {
+                              const input = document.getElementById('tags-x') as HTMLInputElement
+                              if (input) {
+                                addTag(input.value)
+                                input.value = ''
+                              }
+                            }}
+                          >
+                            Dodaj
+                          </Button>
+                          <Button 
+                            type="button" 
+                            onClick={handleGenerateTags}
+                            disabled={isGeneratingTags || (!promptData.title && !promptData.content)}
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            {isGeneratingTags ? (
+                              "Generowanie..."
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Generuj AI
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        {promptData.tags && promptData.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {promptData.tags.map((tag, index) => (
+                              <Badge 
+                                key={index} 
+                                variant="outline" 
+                                className="cursor-pointer hover:bg-red-50 hover:text-red-600"
+                                onClick={() => removeTag(tag)}
+                              >
+                                {tag} ×
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Podgląd */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Label className="text-base font-medium">Podgląd:</Label>
+                <Tabs value={previewType} onValueChange={(value) => setPreviewType(value as "detailed" | "grid")} className="w-auto">
+                  <TabsList className="grid w-auto grid-cols-2 bg-gray-100 p-1 rounded-lg">
+                    <TabsTrigger 
+                      value="detailed" 
+                      className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Szczegółowy
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="grid" 
+                      className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Grid
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              <Card className="border-[color:var(--main-orange)]">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    {previewType === "detailed" ? "Podgląd Szczegółowy (strona promptu)" : "Podgląd Grid (strona główna)"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {previewType === "detailed" ? (
+                    <PromptPreview promptData={promptData} />
+                  ) : (
+                    <PromptGridPreview promptData={promptData} />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                "Zapisywanie..."
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Zapisz prompt
+                </>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 } 

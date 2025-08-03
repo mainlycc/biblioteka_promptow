@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Copy, Share2, Check, Calendar, User, Tag, Code } from "lucide-react"
+import { ArrowLeft, Copy, Share2, Check, Calendar, User, Tag, Code, Image as ImageIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PromptSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import { Breadcrumbs } from "@/components/breadcrumbs"
@@ -17,10 +17,20 @@ import { trackPromptCopy, trackPromptShare } from "@/components/google-analytics
 interface Prompt {
   id: string;
   title: string;
+  title_pl?: string;
   description: string;
+  content_pl?: string;
+  introduction?: string;
   tags: string[];
   author: string;
   author_id?: string;
+  author_username?: string;
+  author_profile_image?: string;
+  type: 'text' | 'image' | 'video';
+  images?: string[];
+  tweet_url?: string;
+  image_url?: string;
+  tweet_id?: string;
   created_at: string;
 }
 
@@ -59,7 +69,7 @@ export default function Page({ params }: Props) {
   const handleCopy = async () => {
     if (!prompt) return
     try {
-      await navigator.clipboard.writeText(`${prompt.title}\n${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`)
+      await navigator.clipboard.writeText(`${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
       trackPromptCopy(prompt.title)
@@ -142,7 +152,18 @@ export default function Page({ params }: Props) {
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <User className="h-4 w-4" />
-            <Avatar className="h-5 w-5">
+            {prompt.author_profile_image ? (
+              <img
+                src={prompt.author_profile_image}
+                alt={prompt.author}
+                className="h-5 w-5 rounded-full object-cover border"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                }}
+              />
+            ) : null}
+            <Avatar className={`h-5 w-5 ${prompt.author_profile_image ? 'hidden' : ''}`}>
               <AvatarFallback className="text-xs bg-orange-100 text-orange-800">
                 {prompt.author.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
@@ -155,6 +176,38 @@ export default function Page({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Zdjęcia dla promptów graficznych */}
+      {prompt.type === 'image' && prompt.images && prompt.images.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <ImageIcon className="h-4 w-4" />
+            <span className="font-medium">Zdjęcia:</span>
+          </div>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="grid w-full max-w-2xl aspect-square gap-2" style={{
+              gridTemplateColumns: (prompt.images?.length || 0) === 1 ? '1fr' : '1fr 1fr',
+              gridTemplateRows: (prompt.images?.length || 0) === 1 ? '1fr' : (prompt.images?.length || 0) <= 2 ? '1fr' : '1fr 1fr'
+            }}>
+              {prompt.images?.map((imageUrl, index) => (
+                <img
+                  key={index}
+                  src={imageUrl}
+                  alt={`Zdjęcie ${index + 1}`}
+                  className="w-full h-full object-cover rounded-xl border shadow-sm"
+                  style={{
+                    gridColumn: (prompt.images?.length || 0) === 1 ? '1 / -1' : 'span 1',
+                    gridRow: (prompt.images?.length || 0) === 1 ? '1 / -1' : (prompt.images?.length || 0) <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tags */}
       <div className="mb-8">

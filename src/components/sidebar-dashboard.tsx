@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Search, Image, Film, FileText } from "lucide-react"
+import { Search, Image as ImageIcon, Film, FileText } from "lucide-react"
 import React from "react"
 
 const routes = [
@@ -21,8 +21,8 @@ const routes = [
   },
   {
     label: "Prompty graficzne",
-    icon: Image,
-    href: "/tweets",
+    icon: ImageIcon,
+    href: "/prompts-graficzne",
     color: "text-pink-700",
   },
   {
