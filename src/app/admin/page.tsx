@@ -51,7 +51,7 @@ export default function AdminPage() {
   useEffect(() => {
     const testSupabaseConnection = async () => {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('prompts')
           .select('count')
           .limit(1)
