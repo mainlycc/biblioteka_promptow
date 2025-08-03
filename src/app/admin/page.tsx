@@ -134,13 +134,13 @@ export default function AdminPage() {
       const tweetData = await fetchTweetData(tweetId)
       
               // Automatyczne wypełnienie pól
-        const autoTitle = tweetData.content.split('\n')[0].slice(0, 50) + (tweetData.content.split('\n')[0].length > 50 ? '...' : '')
+        const autoTitle = tweetData.description.split('\n')[0].slice(0, 50) + (tweetData.description.split('\n')[0].length > 50 ? '...' : '')
         const updatedData = {
           ...promptData,
           title: autoTitle, // Zawsze używamy nowego tytułu
           title_pl: "", // Resetujemy tłumaczenie tytułu
-          description: tweetData.content,
-          description_pl: tweetData.content_pl,
+          description: tweetData.description,
+          description_pl: tweetData.description_pl,
           image_url: tweetData.image_url,
           images: tweetData.images || [], // Dodajemy wszystkie zdjęcia z tweeta
           author: tweetData.author || promptData.author,
@@ -148,7 +148,7 @@ export default function AdminPage() {
           author_profile_image: tweetData.author_profile_image,
           tweet_id: tweetData.tweet_id,
           created_at: tweetData.created_at,
-          tags: tweetData.hashtags || extractTags(tweetData.content),
+          tags: tweetData.hashtags || extractTags(tweetData.description),
           type: (tweetData.images && tweetData.images.length > 0) ? 'image' : 'text' as 'text' | 'image' | 'video'
         }
       
