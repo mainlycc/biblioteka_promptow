@@ -86,8 +86,8 @@ export function PromptGrid() {
                 {prompt.type === 'image' && prompt.images && prompt.images.length > 0 && (
                   <div className="flex flex-1 items-center justify-center px-4 pt-2">
                     <div className="grid w-full aspect-square gap-2" style={{
-                      gridTemplateColumns: prompt.images.length === 1 ? '1fr' : '1fr 1fr',
-                      gridTemplateRows: prompt.images.length === 1 ? '1fr' : prompt.images.length <= 2 ? '1fr' : '1fr 1fr'
+                      gridTemplateColumns: prompt.images?.length === 1 ? '1fr' : '1fr 1fr',
+                      gridTemplateRows: prompt.images?.length === 1 ? '1fr' : prompt.images?.length && prompt.images.length <= 2 ? '1fr' : '1fr 1fr'
                     }}>
                       {prompt.images.map((imageUrl, index) => (
                         <img
@@ -96,8 +96,8 @@ export function PromptGrid() {
                           alt={`Zdjęcie ${index + 1}`}
                           className="w-full h-full object-cover rounded-xl border shadow-sm"
                           style={{
-                            gridColumn: prompt.images.length === 1 ? '1 / -1' : 'span 1',
-                            gridRow: prompt.images.length === 1 ? '1 / -1' : prompt.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
+                            gridColumn: prompt.images?.length === 1 ? '1 / -1' : 'span 1',
+                            gridRow: prompt.images?.length === 1 ? '1 / -1' : prompt.images?.length && prompt.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
                           }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none'
