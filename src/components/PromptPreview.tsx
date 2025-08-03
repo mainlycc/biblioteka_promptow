@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { Copy, Share2, Check, Calendar, User, Tag, Code, ArrowLeft, Image as ImageIcon } from "lucide-react"
+import { Copy, Share2, Check, Calendar, User, Tag, Code, Image as ImageIcon } from "lucide-react"
 
 interface PromptPreviewProps {
   promptData: {
