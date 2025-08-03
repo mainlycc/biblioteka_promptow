@@ -147,8 +147,8 @@ export function PromptPreview({ promptData }: PromptPreviewProps) {
            </div>
            <div className="flex flex-1 items-center justify-center">
              <div className="grid w-full max-w-2xl aspect-square gap-2" style={{
-               gridTemplateColumns: promptData.images.length === 1 ? '1fr' : '1fr 1fr',
-               gridTemplateRows: promptData.images.length === 1 ? '1fr' : promptData.images.length <= 2 ? '1fr' : '1fr 1fr'
+               gridTemplateColumns: promptData.images?.length === 1 ? '1fr' : '1fr 1fr',
+               gridTemplateRows: promptData.images?.length === 1 ? '1fr' : promptData.images?.length && promptData.images.length <= 2 ? '1fr' : '1fr 1fr'
              }}>
                {promptData.images.map((imageUrl, index) => (
                  <img
@@ -157,8 +157,8 @@ export function PromptPreview({ promptData }: PromptPreviewProps) {
                    alt={`Zdjęcie ${index + 1}`}
                    className="w-full h-full object-cover rounded-xl border shadow-sm"
                    style={{
-                     gridColumn: promptData.images.length === 1 ? '1 / -1' : 'span 1',
-                     gridRow: promptData.images.length === 1 ? '1 / -1' : promptData.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
+                     gridColumn: promptData.images?.length === 1 ? '1 / -1' : 'span 1',
+                     gridRow: promptData.images?.length === 1 ? '1 / -1' : promptData.images?.length && promptData.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
                    }}
                    onError={(e) => {
                      e.currentTarget.style.display = 'none'
