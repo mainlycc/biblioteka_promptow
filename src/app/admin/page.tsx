@@ -480,7 +480,7 @@ export default function AdminPage() {
 
     // Sprawdzamy strukturę tabeli przed zapisem
     try {
-      const { data: tableInfo, error: tableError } = await supabase
+      const { error: tableError } = await supabase
         .from('prompts')
         .select('*')
         .limit(0)
