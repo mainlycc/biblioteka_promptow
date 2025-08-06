@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Copy, Share2, Check, Calendar, User, Tag, Code, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Copy, Share2, Check, Calendar, User, Code, Image as ImageIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PromptSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import { Breadcrumbs } from "@/components/breadcrumbs"
@@ -39,6 +38,127 @@ type Props = {
   searchParams: { [key: string]: string | string[] | undefined }
 }
 
+// Funkcja do formatowania tekstu wstępu
+const formatIntroductionText = (text: string): string => {
+  console.log('🚀 FUNKCJA formatIntroductionText została wywołana!')
+  console.log('🚀 Parametr text:', text)
+  
+  if (!text) {
+    console.log('❌ Text jest pusty, zwracam pusty string')
+    return ''
+  }
+  
+  console.log('🔍 Formatowanie tekstu:', text)
+  console.log('🔍 Długość tekstu:', text.length)
+  console.log('🔍 Zawiera \\n:', text.includes('\n'))
+  console.log('🔍 Zawiera \\n\\n:', text.includes('\n\n'))
+  console.log('🔍 Zawiera **:', text.includes('**'))
+  
+  // Jeśli tekst nie ma podwójnych nowych linii, podziel na pojedyncze
+  let paragraphs
+  if (text.includes('\n\n')) {
+    paragraphs = text.split('\n\n')
+  } else if (text.includes('\n')) {
+    paragraphs = text.split('\n')
+  } else {
+    // Jeśli nie ma żadnych nowych linii, traktuj całość jako jeden akapit
+    paragraphs = [text]
+  }
+  
+  console.log('📝 Znalezione akapity:', paragraphs.length)
+  
+  const processedParagraphs = paragraphs.map((paragraph, index) => {
+    const trimmedParagraph = paragraph.trim()
+    if (!trimmedParagraph) return ''
+    
+    console.log(`📄 Akapit ${index + 1}:`, trimmedParagraph)
+    console.log(`📄 Zawiera **:`, trimmedParagraph.includes('**'))
+    console.log(`📄 Zawiera *:`, trimmedParagraph.includes('*'))
+    console.log(`📄 Zawiera \`:`, trimmedParagraph.includes('`'))
+    console.log(`📄 Zawiera [:`, trimmedParagraph.includes('['))
+    
+    // Sprawdź czy to nagłówek
+    if (trimmedParagraph.startsWith('### ')) {
+      const result = `<h3 class="text-xl font-bold mt-6 mb-3 text-black">${trimmedParagraph.substring(4)}</h3>`
+      console.log('✅ Nagłówek H3:', result)
+      return result
+    }
+    if (trimmedParagraph.startsWith('## ')) {
+      const result = `<h2 class="text-2xl font-bold mt-8 mb-4 text-black">${trimmedParagraph.substring(3)}</h2>`
+      console.log('✅ Nagłówek H2:', result)
+      return result
+    }
+    if (trimmedParagraph.startsWith('# ')) {
+      const result = `<h1 class="text-3xl font-bold mt-10 mb-5 text-black">${trimmedParagraph.substring(2)}</h1>`
+      console.log('✅ Nagłówek H1:', result)
+      return result
+    }
+    
+    // Sprawdź czy to element listy
+    if (trimmedParagraph.startsWith('- ')) {
+      const result = `<li class="mb-1 text-black">${trimmedParagraph.substring(2)}</li>`
+      console.log('✅ Element listy:', result)
+      return result
+    }
+    
+    // Sprawdź czy to podtytuł (cały akapit w **pogrubieniu**)
+    if (trimmedParagraph.match(/^\*\*.*\*\*$/)) {
+      const content = trimmedParagraph.replace(/^\*\*(.*)\*\*$/, '$1')
+      const result = `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${content}</h3>`
+      console.log('✅ Podtytuł z gwiazdkami:', result)
+      return result
+    }
+    
+    // Sprawdź czy to podtytuł bez gwiazdek (np. "Co To Jest" lub "Do Czego Służy?")
+    if (trimmedParagraph.match(/^(Co To Jest|Do Czego Służy\??|Jak To Działa\??|Przykłady|Wskazówki|Uwagi|Podsumowanie)$/i)) {
+      const result = `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${trimmedParagraph}</h3>`
+      console.log('✅ Podtytuł bez gwiazdek:', result)
+      return result
+    }
+    
+    // Formatowanie inline dla zwykłego tekstu
+    let processedParagraph = trimmedParagraph
+      // Formatowanie **pogrubienie** - sprawdź czy istnieje
+      .replace(/\*\*(.*?)\*\*/g, (match, content) => {
+        console.log('🔍 Znaleziono pogrubienie:', match, '->', content)
+        return `<strong class="text-black font-bold">${content}</strong>`
+      })
+      // Formatowanie *kursywa* - sprawdź czy istnieje
+      .replace(/\*(.*?)\*/g, (match, content) => {
+        console.log('🔍 Znaleziono kursywę:', match, '->', content)
+        return `<em class="text-black italic">${content}</em>`
+      })
+      // Formatowanie `kod` - sprawdź czy istnieje
+      .replace(/`(.*?)`/g, (match, content) => {
+        console.log('🔍 Znaleziono kod:', match, '->', content)
+        return `<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-black">${content}</code>`
+      })
+      // Formatowanie linków [tekst](url) - sprawdź czy istnieje
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+        console.log('🔍 Znaleziono link:', match, '->', text, url)
+        return `<a href="${url}" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">${text}</a>`
+      })
+    
+    // Opakuj w paragraf
+    const result = `<p class="mb-4 leading-relaxed text-black">${processedParagraph}</p>`
+    console.log('✅ Paragraf:', result)
+    return result
+  })
+  
+  // Połącz akapity
+  let result = processedParagraphs.join('\n')
+  
+  // Opakuj elementy listy w <ul>
+  result = result.replace(/<li[^>]*>.*?<\/li>/g, (match) => {
+    const wrapped = `<ul class="list-disc ml-6 mb-4">${match}</ul>`
+    console.log('✅ Lista opakowana:', wrapped)
+    return wrapped
+  })
+  
+  console.log('🎯 Końcowy wynik:', result)
+  return result
+}
+
 export default function Page({ params }: Props) {
   const [prompt, setPrompt] = useState<Prompt | null>(null)
   const [copied, setCopied] = useState(false)
@@ -58,6 +178,13 @@ export default function Page({ params }: Props) {
         .single()
 
       if (error) throw error
+      
+      // Debug - sprawdź co jest w polu introduction
+      console.log('🔍 Pobrany prompt:', data)
+      console.log('🔍 Pole introduction:', data.introduction)
+      console.log('🔍 Typ introduction:', typeof data.introduction)
+      console.log('🔍 Długość introduction:', data.introduction?.length)
+      
       setPrompt(data)
     } catch (error) {
       console.error('Błąd podczas pobierania promptu:', error)
@@ -211,10 +338,6 @@ export default function Page({ params }: Props) {
 
       {/* Tags */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Tag className="h-4 w-4" />
-          <span className="font-medium">Tagi:</span>
-        </div>
         <div className="flex flex-wrap gap-2">
           {prompt.tags.map((tag: string, i: number) => (
             <Badge key={i} variant="outline" className="hover:bg-orange-100 hover:border-orange-300">
@@ -227,28 +350,59 @@ export default function Page({ params }: Props) {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Full prompt */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5" />
-                Pełny prompt
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 p-4 rounded-lg border">
-                <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
-                  {`${prompt.title}\n${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`}
-                </pre>
+          {/* Full prompt - zaraz pod tagami */}
+          <div className="mb-8">
+            <Card className="border-2 border-orange-200 bg-orange-50/30 shadow-md">
+              <CardHeader className="bg-orange-100/50 border-b border-orange-200">
+                <CardTitle className="flex items-center gap-2 text-orange-800">
+                  <Code className="h-5 w-5" />
+                  Pełny prompt
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="bg-white">
+                <div className="bg-orange-50 p-6 rounded-lg border-2 border-orange-200 shadow-sm">
+                  <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed text-gray-800">
+                    {prompt.description}
+                  </pre>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={handleCopy} size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100">
+                    {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                    {copied ? "Skopiowano!" : "Kopiuj prompt"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Introduction */}
+          {prompt.introduction && (
+            <div className="mb-8">
+              <div className="text-black">
+                <div 
+                  dangerouslySetInnerHTML={{ 
+                    __html: formatIntroductionText(prompt.introduction)
+                  }}
+                />
               </div>
-              <div className="mt-4 flex justify-end">
-                <Button onClick={handleCopy} size="sm" variant="outline">
-                  {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                  {copied ? "Skopiowano!" : "Kopiuj prompt"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Debug - pokaż surowy tekst */}
+              <details className="mt-4 p-4 bg-gray-100 rounded text-xs">
+                <summary>Debug - surowy tekst</summary>
+                <pre className="whitespace-pre-wrap mt-2">{prompt.introduction}</pre>
+              </details>
+            </div>
+          )}
+          
+          {/* Debug - sprawdź czy introduction istnieje */}
+          <div className="mb-8 p-4 bg-yellow-100 rounded text-xs">
+            <strong>Debug Introduction:</strong><br/>
+            Introduction istnieje: {prompt.introduction ? 'TAK' : 'NIE'}<br/>
+            Introduction długość: {prompt.introduction?.length || 0}<br/>
+            Introduction typ: {typeof prompt.introduction}<br/>
+            Introduction zawiera **: {prompt.introduction?.includes('**') ? 'TAK' : 'NIE'}<br/>
+            Introduction zawiera "Co To Jest": {prompt.introduction?.includes('Co To Jest') ? 'TAK' : 'NIE'}<br/>
+            Introduction zawiera "Do Czego Służy": {prompt.introduction?.includes('Do Czego Służy') ? 'TAK' : 'NIE'}<br/>
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -259,15 +413,6 @@ export default function Page({ params }: Props) {
               <CardTitle>Szybkie akcje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button onClick={handleCopy} className="w-full justify-start" variant="outline">
-                <Copy className="h-4 w-4 mr-2" />
-                Kopiuj pełny prompt
-              </Button>
-              <Button onClick={handleShare} className="w-full justify-start" variant="outline">
-                <Share2 className="h-4 w-4 mr-2" />
-                Udostępnij prompt
-              </Button>
-              <Separator />
               <Link href="/" className="block">
                 <Button className="w-full justify-start" variant="ghost">
                   <ArrowLeft className="h-4 w-4 mr-2" />
