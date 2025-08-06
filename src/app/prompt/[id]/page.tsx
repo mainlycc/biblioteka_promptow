@@ -40,19 +40,9 @@ type Props = {
 
 // Funkcja do formatowania tekstu wstępu
 const formatIntroductionText = (text: string): string => {
-  console.log('🚀 FUNKCJA formatIntroductionText została wywołana!')
-  console.log('🚀 Parametr text:', text)
-  
   if (!text) {
-    console.log('❌ Text jest pusty, zwracam pusty string')
     return ''
   }
-  
-  console.log('🔍 Formatowanie tekstu:', text)
-  console.log('🔍 Długość tekstu:', text.length)
-  console.log('🔍 Zawiera \\n:', text.includes('\n'))
-  console.log('🔍 Zawiera \\n\\n:', text.includes('\n\n'))
-  console.log('🔍 Zawiera **:', text.includes('**'))
   
   // Jeśli tekst nie ma podwójnych nowych linii, podziel na pojedyncze
   let paragraphs
@@ -65,84 +55,58 @@ const formatIntroductionText = (text: string): string => {
     paragraphs = [text]
   }
   
-  console.log('📝 Znalezione akapity:', paragraphs.length)
-  
-  const processedParagraphs = paragraphs.map((paragraph, index) => {
+  const processedParagraphs = paragraphs.map((paragraph) => {
     const trimmedParagraph = paragraph.trim()
     if (!trimmedParagraph) return ''
     
-    console.log(`📄 Akapit ${index + 1}:`, trimmedParagraph)
-    console.log(`📄 Zawiera **:`, trimmedParagraph.includes('**'))
-    console.log(`📄 Zawiera *:`, trimmedParagraph.includes('*'))
-    console.log(`📄 Zawiera \`:`, trimmedParagraph.includes('`'))
-    console.log(`📄 Zawiera [:`, trimmedParagraph.includes('['))
-    
     // Sprawdź czy to nagłówek
     if (trimmedParagraph.startsWith('### ')) {
-      const result = `<h3 class="text-xl font-bold mt-6 mb-3 text-black">${trimmedParagraph.substring(4)}</h3>`
-      console.log('✅ Nagłówek H3:', result)
-      return result
+      return `<h3 class="text-xl font-bold mt-6 mb-3 text-black">${trimmedParagraph.substring(4)}</h3>`
     }
     if (trimmedParagraph.startsWith('## ')) {
-      const result = `<h2 class="text-2xl font-bold mt-8 mb-4 text-black">${trimmedParagraph.substring(3)}</h2>`
-      console.log('✅ Nagłówek H2:', result)
-      return result
+      return `<h2 class="text-2xl font-bold mt-8 mb-4 text-black">${trimmedParagraph.substring(3)}</h2>`
     }
     if (trimmedParagraph.startsWith('# ')) {
-      const result = `<h1 class="text-3xl font-bold mt-10 mb-5 text-black">${trimmedParagraph.substring(2)}</h1>`
-      console.log('✅ Nagłówek H1:', result)
-      return result
+      return `<h1 class="text-3xl font-bold mt-10 mb-5 text-black">${trimmedParagraph.substring(2)}</h1>`
     }
     
     // Sprawdź czy to element listy
     if (trimmedParagraph.startsWith('- ')) {
-      const result = `<li class="mb-1 text-black">${trimmedParagraph.substring(2)}</li>`
-      console.log('✅ Element listy:', result)
-      return result
+      return `<li class="mb-1 text-black">${trimmedParagraph.substring(2)}</li>`
     }
     
     // Sprawdź czy to podtytuł (cały akapit w **pogrubieniu**)
     if (trimmedParagraph.match(/^\*\*.*\*\*$/)) {
       const content = trimmedParagraph.replace(/^\*\*(.*)\*\*$/, '$1')
-      const result = `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${content}</h3>`
-      console.log('✅ Podtytuł z gwiazdkami:', result)
-      return result
+      return `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${content}</h3>`
     }
     
     // Sprawdź czy to podtytuł bez gwiazdek (np. "Co To Jest" lub "Do Czego Służy?")
     if (trimmedParagraph.match(/^(Co To Jest|Do Czego Służy\??|Jak To Działa\??|Przykłady|Wskazówki|Uwagi|Podsumowanie)$/i)) {
-      const result = `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${trimmedParagraph}</h3>`
-      console.log('✅ Podtytuł bez gwiazdek:', result)
-      return result
+      return `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${trimmedParagraph}</h3>`
     }
     
     // Formatowanie inline dla zwykłego tekstu
     let processedParagraph = trimmedParagraph
-      // Formatowanie **pogrubienie** - sprawdź czy istnieje
-      .replace(/\*\*(.*?)\*\*/g, (match, content) => {
-        console.log('🔍 Znaleziono pogrubienie:', match, '->', content)
+      // Formatowanie **pogrubienie**
+      .replace(/\*\*(.*?)\*\*/g, (_, content) => {
         return `<strong class="text-black font-bold">${content}</strong>`
       })
-      // Formatowanie *kursywa* - sprawdź czy istnieje
-      .replace(/\*(.*?)\*/g, (match, content) => {
-        console.log('🔍 Znaleziono kursywę:', match, '->', content)
+      // Formatowanie *kursywa*
+      .replace(/\*(.*?)\*/g, (_, content) => {
         return `<em class="text-black italic">${content}</em>`
       })
-      // Formatowanie `kod` - sprawdź czy istnieje
-      .replace(/`(.*?)`/g, (match, content) => {
-        console.log('🔍 Znaleziono kod:', match, '->', content)
+      // Formatowanie `kod`
+      .replace(/`(.*?)`/g, (_, content) => {
         return `<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-black">${content}</code>`
       })
-      // Formatowanie linków [tekst](url) - sprawdź czy istnieje
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-        console.log('🔍 Znaleziono link:', match, '->', text, url)
+      // Formatowanie linków [tekst](url)
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
         return `<a href="${url}" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">${text}</a>`
       })
     
     // Opakuj w paragraf
-    const result = `<p class="mb-4 leading-relaxed text-black">${processedParagraph}</p>`
-    console.log('✅ Paragraf:', result)
-    return result
+    return `<p class="mb-4 leading-relaxed text-black">${processedParagraph}</p>`
   })
   
   // Połącz akapity
@@ -150,12 +114,9 @@ const formatIntroductionText = (text: string): string => {
   
   // Opakuj elementy listy w <ul>
   result = result.replace(/<li[^>]*>.*?<\/li>/g, (match) => {
-    const wrapped = `<ul class="list-disc ml-6 mb-4">${match}</ul>`
-    console.log('✅ Lista opakowana:', wrapped)
-    return wrapped
+    return `<ul class="list-disc ml-6 mb-4">${match}</ul>`
   })
   
-  console.log('🎯 Końcowy wynik:', result)
   return result
 }
 
@@ -178,12 +139,6 @@ export default function Page({ params }: Props) {
         .single()
 
       if (error) throw error
-      
-      // Debug - sprawdź co jest w polu introduction
-      console.log('🔍 Pobrany prompt:', data)
-      console.log('🔍 Pole introduction:', data.introduction)
-      console.log('🔍 Typ introduction:', typeof data.introduction)
-      console.log('🔍 Długość introduction:', data.introduction?.length)
       
       setPrompt(data)
     } catch (error) {
@@ -350,7 +305,20 @@ export default function Page({ params }: Props) {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Full prompt - zaraz pod tagami */}
+          {/* Introduction - najpierw wstęp */}
+          {prompt.introduction && (
+            <div className="mb-8">
+              <div className="text-black">
+                <div 
+                  dangerouslySetInnerHTML={{ 
+                    __html: formatIntroductionText(prompt.introduction)
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Full prompt - potem pełny prompt */}
           <div className="mb-8">
             <Card className="border-2 border-orange-200 bg-orange-50/30 shadow-md">
               <CardHeader className="bg-orange-100/50 border-b border-orange-200">
@@ -373,35 +341,6 @@ export default function Page({ params }: Props) {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Introduction */}
-          {prompt.introduction && (
-            <div className="mb-8">
-              <div className="text-black">
-                <div 
-                  dangerouslySetInnerHTML={{ 
-                    __html: formatIntroductionText(prompt.introduction)
-                  }}
-                />
-              </div>
-              {/* Debug - pokaż surowy tekst */}
-              <details className="mt-4 p-4 bg-gray-100 rounded text-xs">
-                <summary>Debug - surowy tekst</summary>
-                <pre className="whitespace-pre-wrap mt-2">{prompt.introduction}</pre>
-              </details>
-            </div>
-          )}
-          
-          {/* Debug - sprawdź czy introduction istnieje */}
-          <div className="mb-8 p-4 bg-yellow-100 rounded text-xs">
-            <strong>Debug Introduction:</strong><br/>
-            Introduction istnieje: {prompt.introduction ? 'TAK' : 'NIE'}<br/>
-            Introduction długość: {prompt.introduction?.length || 0}<br/>
-            Introduction typ: {typeof prompt.introduction}<br/>
-            Introduction zawiera **: {prompt.introduction?.includes('**') ? 'TAK' : 'NIE'}<br/>
-            Introduction zawiera "Co To Jest": {prompt.introduction?.includes('Co To Jest') ? 'TAK' : 'NIE'}<br/>
-            Introduction zawiera "Do Czego Służy": {prompt.introduction?.includes('Do Czego Służy') ? 'TAK' : 'NIE'}<br/>
           </div>
         </div>
 

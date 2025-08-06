@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye } from "lucide-react"
+import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye, Languages } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { PromptPreview } from "@/components/PromptPreview"
@@ -45,6 +45,7 @@ export default function AdminPage() {
   const [isFetching, setIsFetching] = useState(false)
   const [isGeneratingTags, setIsGeneratingTags] = useState(false)
   const [isGeneratingIntro, setIsGeneratingIntro] = useState(false)
+  const [isTranslating, setIsTranslating] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   
   // Test połączenia z Supabase przy ładowaniu
@@ -380,6 +381,47 @@ export default function AdminPage() {
       setMessage({ type: 'error', text: `Błąd podczas generowania wstępu: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
     } finally {
       setIsGeneratingIntro(false)
+    }
+  }
+
+  // Tłumaczenie treści promptu
+  const handleTranslateDescription = async () => {
+    if (!promptData.description) {
+      setMessage({ type: 'error', text: 'Wprowadź treść promptu aby przetłumaczyć' })
+      return
+    }
+
+    setIsTranslating(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: promptData.description
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        // Sprawdź czy to błąd rate limit
+        if (response.status === 429) {
+          throw new Error(`${errorData.error}\n\n${errorData.details || ''}`)
+        }
+        
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      setPromptData(prev => ({ ...prev, description_pl: data.translatedText }))
+      setMessage({ type: 'success', text: 'Treść promptu została przetłumaczona!' })
+    } catch (error) {
+      setMessage({ type: 'error', text: `Błąd podczas tłumaczenia: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
+    } finally {
+      setIsTranslating(false)
     }
   }
 
@@ -896,10 +938,23 @@ export default function AdminPage() {
                          )}
 
                       <div className="space-y-2">
-                        <Label htmlFor="content" className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Treść promptu (do kopiowania) *
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="content" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Treść promptu (do kopiowania) *
+                          </Label>
+                          <Button
+                            type="button"
+                            onClick={handleTranslateDescription}
+                            disabled={isTranslating || !promptData.description}
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            <Languages className="h-4 w-4" />
+                            {isTranslating ? 'Tłumaczę...' : 'Tłumacz'}
+                          </Button>
+                        </div>
                         <Textarea
                           id="content"
                           value={promptData.description}
@@ -1368,10 +1423,23 @@ export default function AdminPage() {
                          )}
 
                       <div className="space-y-2">
-                        <Label htmlFor="content-x" className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Treść promptu (do kopiowania) *
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="content-x" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Treść promptu (do kopiowania) *
+                          </Label>
+                          <Button
+                            type="button"
+                            onClick={handleTranslateDescription}
+                            disabled={isTranslating || !promptData.description}
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            <Languages className="h-4 w-4" />
+                            {isTranslating ? 'Tłumaczę...' : 'Tłumacz'}
+                          </Button>
+                        </div>
                         <Textarea
                           id="content-x"
                           value={promptData.description}
