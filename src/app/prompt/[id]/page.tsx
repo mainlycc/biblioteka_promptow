@@ -203,7 +203,7 @@ export default function Page({ params }: Props) {
           />
         </>
       )}
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="container mx-auto px-4 md:px-6 py-4 md:py-8 max-w-4xl">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           items={[
@@ -213,17 +213,17 @@ export default function Page({ params }: Props) {
         />
 
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col gap-4 mb-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold">{prompt.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight">{prompt.title}</h1>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleCopy} className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button onClick={handleCopy} className="flex items-center justify-center gap-2 w-full sm:w-auto">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? "Skopiowano!" : "Kopiuj prompt"}
             </Button>
-            <Button variant="outline" onClick={handleShare} className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleShare} className="flex items-center justify-center gap-2 w-full sm:w-auto">
               <Share2 className="h-4 w-4" />
               Udostępnij
             </Button>
@@ -231,7 +231,7 @@ export default function Page({ params }: Props) {
         </div>
 
         {/* Meta info */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <User className="h-4 w-4" />
             {prompt.author_profile_image ? (
@@ -302,9 +302,9 @@ export default function Page({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
         {/* Main content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 md:space-y-8">
           {/* Introduction - najpierw wstęp */}
           {prompt.introduction && (
             <div className="mb-8">
@@ -345,7 +345,7 @@ export default function Page({ params }: Props) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-6 lg:block">
           {/* Quick actions */}
           <Card>
             <CardHeader>

@@ -110,8 +110,10 @@ export default function RootLayout({
         <ErrorBoundary>
           <Header />
           <div className="flex flex-1">
-            <Sidebar />
-            <main className="flex-1">
+            <div className="hidden md:block">
+              <Sidebar />
+            </div>
+            <main className="flex-1 w-full">
               {children}
             </main>
           </div>

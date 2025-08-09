@@ -73,13 +73,13 @@ export function PromptGrid() {
         onClose={() => setShowToast(false)}
       />
       <div className="text-muted-foreground mb-4">Znaleziono {prompts.length} promptów tekstowych</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 items-stretch">
         {prompts.map((prompt, idx) => (
           <div key={prompt.id} className="block h-full">
-            <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[300px]">
+            <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[280px] md:min-h-[300px]">
               <Link href={`/prompt/${prompt.id}`} className="block">
-                <div className="px-4 pt-2">
-                  <h3 className="font-semibold text-base text-black text-center">{prompt.title}</h3>
+                <div className="px-3 md:px-4 pt-2">
+                  <h3 className="font-semibold text-sm md:text-base text-black text-center leading-tight">{prompt.title}</h3>
                 </div>
                 
                 {/* Zdjęcia dla promptów graficznych */}
@@ -108,34 +108,34 @@ export function PromptGrid() {
                   </div>
                 )}
                 
-                <CardContent className="flex flex-col flex-1 gap-2 pt-2 px-4 pb-0">
-                  <div className="text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-hidden line-clamp-6">{prompt.description}</div>
+                <CardContent className="flex flex-col flex-1 gap-2 pt-2 px-3 md:px-4 pb-0">
+                  <div className="text-xs md:text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-hidden line-clamp-4 md:line-clamp-6">{prompt.description}</div>
                   <div className="flex flex-wrap gap-1">
                     {prompt.tags.map((tag, i) => (
-                      <Badge key={i} variant="outline">{tag}</Badge>
+                      <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
                     ))}
                   </div>
                 </CardContent>
               </Link>
-              <div className="flex justify-between items-center mt-auto px-4 py-2 border-t">
+              <div className="flex justify-between items-center mt-auto px-3 md:px-4 py-2 border-t">
                 <div className="flex items-center gap-1">
                   {prompt.author_profile_image ? (
                     <img
                       src={prompt.author_profile_image}
                       alt={prompt.author}
-                      className="h-5 w-5 rounded-full object-cover border"
+                      className="h-4 w-4 md:h-5 md:w-5 rounded-full object-cover border"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
                         e.currentTarget.nextElementSibling?.classList.remove('hidden')
                       }}
                     />
                   ) : null}
-                  <Avatar className={`h-5 w-5 ${prompt.author_profile_image ? 'hidden' : ''}`}>
+                  <Avatar className={`h-4 w-4 md:h-5 md:w-5 ${prompt.author_profile_image ? 'hidden' : ''}`}>
                     <AvatarFallback className="text-xs">
                       {prompt.author.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs md:text-sm text-muted-foreground">
                     {prompt.author}
                   </span>
                 </div>

@@ -47,7 +47,7 @@ export function Sidebar() {
 
 
   return (
-    <div className={`space-y-4 py-4 flex flex-col h-full bg-white text-black border-r transition-all duration-200`}>
+    <div className={`space-y-4 py-4 flex flex-col h-full bg-white text-black border-r transition-all duration-200 w-64`}>
       <div className="px-3 py-2 flex-1">
         <div className="space-y-1">
           {routes.map((route) => (

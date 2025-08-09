@@ -253,6 +253,53 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--main-orange-dark) !important;
 }
 
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Touch-friendly button sizes */
+  button, .button, [type="button"], [type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better text readability on mobile */
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Improved spacing for mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Better card spacing on mobile */
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  /* Improved form elements on mobile */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 768px) {
+  /* Ensure drawer takes full width on mobile */
+  [data-slot="drawer-content"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Better touch targets */
+  a, button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 /* RadioGroup fix - przywrócenie okrągłych kształtów */
 [data-slot="radio-group-item"] {
   border-radius: 50% !important;
