@@ -1,9 +1,8 @@
-import { getBlogPosts } from "@/lib/blog"
+import { getBlogPosts, revalidateBlogPage } from "@/lib/blog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Eye, EyeOff, Calendar, User } from "lucide-react"
-import { revalidateBlogPage } from "@/lib/blog"
 
 export const revalidate = 0 // Zawsze odświeżaj tę stronę
 
@@ -193,7 +192,7 @@ export default async function BlogDebugPage() {
           <ul className="list-disc list-inside ml-4 space-y-1">
             <li>Sprawdź czy <code>is_published = true</code> w Supabase</li>
             <li>Sprawdź czy <code>published_at</code> nie jest w przyszłości</li>
-            <li>Odczekaj do 60 sekund (cache się odświeża co minutę)</li>
+            <li>Odczekaj do 30 sekund (cache się odświeża co minutę)</li>
             <li>Odśwież stronę bloga (F5)</li>
           </ul>
         </CardContent>
