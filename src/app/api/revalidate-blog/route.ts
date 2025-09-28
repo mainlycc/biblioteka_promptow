@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Wymuś odświeżenie cache strony bloga
     revalidatePath('/blog')
