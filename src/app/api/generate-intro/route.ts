@@ -6,8 +6,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.N
 
 /**
  * Generuje wstęp do promptu w stylu posta blogowego
+ * Jeśli tytuł nie jest podany, model ma zaproponować krótki tytuł na podstawie treści.
  */
-async function generateIntroduction(title: string, content: string): Promise<string> {
+async function generateIntroduction(title: string | undefined, content: string): Promise<string> {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -16,7 +17,7 @@ Na podstawie podanego tytułu i treści promptu, wygeneruj atrakcyjny wstęp w s
 
 STRUKTURA WSTĘPU:
 1. Emoji + tytuł (np. 🏃‍♂️ Stwórz swój plan biegowy z AI)
-2. 2-3 zdania opisujące problem i korzyści z użycia AI
+2. 2-3 zdania opisujące problem i korzyści z użycia promptu
 3. Zdanie zachęcające do użycia promptu
 
 WYMAGANIA JĘZYKOWE:
@@ -27,13 +28,14 @@ WYMAGANIA JĘZYKOWE:
 POZOSTAŁE WYMAGANIA:
 - Użyj odpowiedniego emoji na początku
 - Ton przyjazny i zachęcający
-- Podkreśl szybkość i efektywność AI
+- Podkreśl  efektywność promptu
 - NIE DODAWAJ sekcji "💡 Prompt:" ani oryginalnej treści promptu
 - NIE DODAWAJ żadnych dodatkowych komentarzy
 - Wstęp ma być samodzielny i kompletny
+ - Jeśli tytuł nie jest podany, samodzielnie zaproponuj krótki, zwięzły tytuł na podstawie treści
 
 DANE WEJŚCIOWE:
-Tytuł: ${title}
+Tytuł: ${title && title.trim().length > 0 ? title : '(brak — wygeneruj krótki tytuł na podstawie treści)'}
 Treść promptu: ${content}
 
 Wygeneruj tylko wstęp po polsku (bez tytułu ani promptu):
@@ -58,14 +60,17 @@ Wystarczy skopiować prompt poniżej i wkleić go do ChatGPT lub innego narzędz
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, content } = body
+    // Akceptujemy równoważne pola: content | description | prompt
+    const title: string | undefined = typeof body.title === 'string' ? body.title : undefined
+    const contentCandidates = [body.content, body.description, body.prompt]
+    const content = contentCandidates.find((c: unknown) => typeof c === 'string' && c.trim().length > 0) as string | undefined
     
     console.log('🔄 Generate-intro API otrzymał:', { title, content })
     
-    if (!title || !content || typeof title !== 'string' || typeof content !== 'string') {
-      console.log('❌ Brak tytułu lub treści')
+    if (!content) {
+      console.log('❌ Brak treści (content/description/prompt)')
       return NextResponse.json(
-        { error: "Tytuł i treść są wymagane" },
+        { error: "Treść promptu jest wymagana (content/description/prompt)" },
         { status: 400 }
       )
     }
@@ -76,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       introduction,
-      title,
+      title: title || null,
       content
     })
     

@@ -10,11 +10,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye, Languages } from "lucide-react"
+import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye, Languages, BookOpen, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { PromptPreview } from "@/components/PromptPreview"
 import { PromptGridPreview } from "@/components/PromptGridPreview"
+import { BlogGenerator } from "@/components/blog-generator"
 
 interface PromptData {
   title: string
@@ -38,9 +39,11 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loginData, setLoginData] = useState({ username: "", password: "" })
   const [loginError, setLoginError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   
   const [promptType, setPromptType] = useState<"manual" | "x">("manual")
   const [previewType, setPreviewType] = useState<"detailed" | "grid">("detailed")
+  const [activeTab, setActiveTab] = useState<"prompts" | "blog">("prompts")
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [isGeneratingTags, setIsGeneratingTags] = useState(false)
@@ -98,6 +101,7 @@ export default function AdminPage() {
     setIsAuthenticated(false)
     setLoginData({ username: "", password: "" })
     setLoginError("")
+    setShowPassword(false)
   }
 
   // Pobieranie danych z X
@@ -344,8 +348,8 @@ export default function AdminPage() {
 
   // Generowanie wstępu AI
   const handleGenerateIntro = async () => {
-    if (!promptData.title || !promptData.description) {
-      setMessage({ type: 'error', text: 'Wprowadź tytuł i treść promptu aby wygenerować wstęp' })
+    if (!promptData.description && !promptData.title) {
+      setMessage({ type: 'error', text: 'Wprowadź treść promptu lub tytuł, aby wygenerować wstęp' })
       return
     }
 
@@ -618,14 +622,30 @@ export default function AdminPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="password">Hasło</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  placeholder="Wprowadź hasło"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    placeholder="Wprowadź hasło"
+                    required
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <Button type="submit" className="w-full">
@@ -660,9 +680,30 @@ export default function AdminPage() {
           </Button>
         </div>
         <p className="text-muted-foreground">
-          Dodawaj nowe prompty do biblioteki
+          Zarządzaj promptami i artykułami bloga
         </p>
       </div>
+
+      {/* Main Tabs */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "prompts" | "blog")} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg mb-6">
+          <TabsTrigger 
+            value="prompts" 
+            className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+          >
+            <FileText className="h-4 w-4" />
+            Prompty
+          </TabsTrigger>
+          <TabsTrigger 
+            value="blog" 
+            className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm data-[state=active]:border-orange-200 data-[state=active]:border"
+          >
+            <BookOpen className="h-4 w-4" />
+            Blog
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="prompts">
 
       {/* Message */}
       {message && (
@@ -799,7 +840,7 @@ export default function AdminPage() {
                             <Button 
                               type="button" 
                               onClick={handleGenerateIntro}
-                              disabled={isGeneratingIntro || !promptData.title || !promptData.description}
+                              disabled={isGeneratingIntro || (!promptData.description && !promptData.title)}
                               variant="outline"
                               size="sm"
                               className="flex items-center gap-2"
@@ -1284,7 +1325,7 @@ export default function AdminPage() {
                             <Button 
                               type="button" 
                               onClick={handleGenerateIntro}
-                              disabled={isGeneratingIntro || !promptData.title || !promptData.description}
+                              disabled={isGeneratingIntro || (!promptData.description && !promptData.title)}
                               variant="outline"
                               size="sm"
                               className="flex items-center gap-2"
@@ -1645,6 +1686,12 @@ export default function AdminPage() {
           </form>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="blog">
+          <BlogGenerator />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 } 

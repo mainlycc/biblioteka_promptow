@@ -20,7 +20,7 @@ Przetłumacz następujący tytuł promptu na język polski.
 ZAWSZE tłumacz, nawet jeśli tekst już zawiera polskie znaki.
 Zachowaj krótką i zwięzłą formę tytułu.
 Nie dodawaj żadnych dodatkowych komentarzy, zwróć tylko przetłumaczony tytuł.
-
+Nie dawaj słów typu GPT-4 albo GPT 
 Tytuł do przetłumaczenia:
 ${text}
 `;

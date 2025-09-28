@@ -79,7 +79,7 @@ export function PromptGrid() {
             <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[280px] md:min-h-[300px]">
               <Link href={`/prompt/${prompt.id}`} className="block">
                 <div className="px-3 md:px-4 pt-2">
-                  <h3 className="font-semibold text-sm md:text-base text-black text-center leading-tight">{prompt.title}</h3>
+                  <h3 className="font-semibold text-sm md:text-base text-black text-center leading-tight">{prompt.title_pl}</h3>
                 </div>
                 
                 {/* Zdjęcia dla promptów graficznych */}
