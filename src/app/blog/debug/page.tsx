@@ -1,4 +1,4 @@
-import { getBlogPosts, checkBlogPostVisibility } from "@/lib/blog"
+import { getBlogPosts } from "@/lib/blog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
