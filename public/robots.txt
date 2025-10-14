@@ -4,17 +4,46 @@ Allow: /
 # Sitemap
 Sitemap: https://bibliotekapromptow.pl/sitemap.xml
 
-# Crawl-delay
-Crawl-delay: 1
+# Allow static resources
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.avif$
+Allow: /*.svg$
+Allow: /*.woff$
+Allow: /*.woff2$
 
 # Disallow admin areas
 Disallow: /admin/
 Disallow: /api/
-Disallow: /_next/
-Disallow: /static/
+Disallow: /_next/static/
+Disallow: /dashboard/
+Disallow: /login/
 
 # Allow important pages
 Allow: /blog/
 Allow: /contact/
 Allow: /prompt/
-Allow: /newsletter/ 
+Allow: /newsletter/
+Allow: /prompts-graficzne/
+Allow: /filmowe/
+
+# Googlebot specific
+User-agent: Googlebot
+Crawl-delay: 0
+Allow: /
+
+# Bingbot specific
+User-agent: Bingbot
+Crawl-delay: 1
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10 

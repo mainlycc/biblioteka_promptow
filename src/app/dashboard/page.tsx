@@ -1,4 +1,18 @@
 import { Sidebar, SidebarProvider } from "@/components/ui/sidebar"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Dashboard - Biblioteka Promptów",
+  description: "Dashboard użytkownika Biblioteki Promptów",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+}
 
 export default function Page() {
   return (

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "Biblioteka Promptów - Najlepsze Prompty dla AI",
     template: "%s | Biblioteka Promptów"
   },
-  description: "Odkryj najlepsze prompty dla ChatGPT, Claude, Gemini i innych modeli AI. Skuteczne szablony promptów dla biznesu, kreatywności i codziennej pracy. Darmowa biblioteka promptów.",
+  description: "Darmowa biblioteka najlepszych promptów dla ChatGPT, Claude i Gemini. Gotowe szablony AI dla biznesu, kreatywności i codziennej pracy.",
   keywords: [
     "prompty",
     "prompt engineering",
@@ -32,7 +32,17 @@ export const metadata: Metadata = {
     "sztuczna inteligencja",
     "szablony promptów",
     "biblioteka promptów",
-    "prompt templates"
+    "prompt templates",
+    "darmowe prompty chatgpt",
+    "najlepsze prompty claude",
+    "prompty do ai",
+    "gotowe prompty",
+    "prompty dla gemini",
+    "skuteczne prompty",
+    "prompty po polsku",
+    "szablony do chatgpt",
+    "biblioteka ai",
+    "prompty biznesowe"
   ],
   authors: [{ name: "Biblioteka Promptów" }],
   creator: "Biblioteka Promptów",
@@ -81,8 +91,8 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
   },
 };
 
@@ -98,6 +108,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://supabase.co" />
         <link rel="dns-prefetch" href="https://supabase.co" />
+        <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="preconnect" href="https://vercel.live" />
+        <link rel="dns-prefetch" href="https://vercel.live" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#d03801" />
         <link rel="icon" href="/favicon.ico" />

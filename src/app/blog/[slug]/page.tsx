@@ -7,6 +7,7 @@ import { BlogPostError } from "@/components/blog-error"
 import { BlogContent } from "@/components/blog-content"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
+import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 
 interface BlogPostPageProps {
   params: {
@@ -85,17 +86,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Navigation */}
-      <div className="mb-6">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Powrót do bloga
-        </Link>
-      </div>
+    <>
+      <ArticleSchema article={post} />
+      <BreadcrumbSchema 
+        items={[
+          { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
+          { name: "Blog", url: "https://bibliotekapromptow.pl/blog" },
+          { name: post.title, url: `https://bibliotekapromptow.pl/blog/${post.slug}` }
+        ]} 
+      />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Powrót do bloga
+          </Link>
+        </div>
 
       {/* Article Header */}
       <div className="mb-8">
@@ -167,6 +177,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

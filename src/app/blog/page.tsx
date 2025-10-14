@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User, Clock } from "lucide-react"
 import { Breadcrumbs } from "@/components/breadcrumbs"
+import { BreadcrumbSchema } from "@/components/json-ld-schema"
 import { getBlogPosts, getBlogStats, testSupabaseConnection } from "@/lib/blog"
 import { BlogError } from "@/components/blog-error"
 
@@ -81,13 +82,20 @@ export default async function BlogPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Breadcrumbs */}
-      <Breadcrumbs 
+    <>
+      <BreadcrumbSchema 
         items={[
-          { label: "Blog" }
+          { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
+          { name: "Blog", url: "https://bibliotekapromptow.pl/blog" }
         ]} 
       />
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: "Blog" }
+          ]} 
+        />
 
       {/* Header */}
       <div className="mb-8 text-center">
@@ -181,6 +189,7 @@ export default async function BlogPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   )
 } 

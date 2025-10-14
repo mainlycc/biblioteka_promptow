@@ -116,4 +116,62 @@ export function WebsiteSchema() {
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   )
+}
+
+interface ArticleSchemaProps {
+  article: {
+    title: string
+    excerpt: string
+    slug: string
+    author: string
+    published_at: string
+    updated_at: string
+    category: string
+    tags: string[]
+    content: string
+    read_time: number
+    image_url?: string
+  }
+}
+
+export function ArticleSchema({ article }: ArticleSchemaProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": article.title,
+    "description": article.excerpt,
+    "image": article.image_url || "https://bibliotekapromptow.pl/logo.png",
+    "datePublished": article.published_at,
+    "dateModified": article.updated_at,
+    "author": {
+      "@type": "Person",
+      "name": article.author
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Biblioteka Promptów",
+      "url": "https://bibliotekapromptow.pl",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://bibliotekapromptow.pl/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://bibliotekapromptow.pl/blog/${article.slug}`
+    },
+    "articleSection": article.category,
+    "keywords": article.tags.join(", "),
+    "wordCount": article.content.split(/\s+/).length,
+    "timeRequired": `PT${article.read_time}M`,
+    "inLanguage": "pl-PL"
+  }
+
+  return (
+    <Script
+      id={`article-schema-${article.slug}`}
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
 } 
