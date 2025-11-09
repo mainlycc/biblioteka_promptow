@@ -39,7 +39,7 @@ export default function PolitykaPrywatnosciPage() {
               <ul className="list-disc pl-6 mb-3 space-y-1">
                 <li>Biblioteka Promptów</li>
                 <li>Adres siedziby: Polska</li>
-                <li>E-mail: kontakt@bibliotekapromptow.pl</li>
+                <li>E-mail: bibliotekapromptow@gmail.com</li>
               </ul>
               <p className="mb-3">
                 Administrator przetwarza dane osobowe zgodnie z przepisami Rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych i w sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy 95/46/WE (ogólne rozporządzenie o ochronie danych, dalej: RODO), Ustawy o ochronie danych osobowych oraz Ustawy o świadczeniu usług drogą elektroniczną.
@@ -135,7 +135,7 @@ export default function PolitykaPrywatnosciPage() {
                 <li><strong>Prawo do wniesienia skargi do organu nadzorczego:</strong> Użytkownik ma prawo wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa), jeśli uważa, że przetwarzanie jego danych osobowych narusza przepisy RODO.</li>
               </ul>
               <p className="mb-3">
-                W celu realizacji swoich praw, użytkownik może skontaktować się z Administratorem za pośrednictwem adresu e-mail: kontakt@bibliotekapromptow.pl.
+                W celu realizacji swoich praw, użytkownik może skontaktować się z Administratorem za pośrednictwem adresu e-mail: bibliotekapromptow@gmail.com.
               </p>
             </div>
 
@@ -180,7 +180,7 @@ export default function PolitykaPrywatnosciPage() {
             <div>
               <h2 className="text-xl font-semibold mb-4">§ 8. Kontakt</h2>
               <p className="mb-3">
-                Wszelkie pytania i uwagi dotyczące Polityki Prywatności prosimy kierować na adres e-mail: kontakt@bibliotekapromptow.pl.
+                Wszelkie pytania i uwagi dotyczące Polityki Prywatności prosimy kierować na adres e-mail: bibliotekapromptow@gmail.com.
               </p>
             </div>
           </div>

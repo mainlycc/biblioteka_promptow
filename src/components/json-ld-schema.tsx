@@ -60,7 +60,7 @@ export function OrganizationSchema() {
     ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "email": "kontakt@bibliotekapromptow.pl",
+      "email": "bibliotekapromptow@gmail.com",
       "contactType": "customer service"
     }
   }

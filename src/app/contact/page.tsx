@@ -75,7 +75,7 @@ export default function ContactPage() {
                 <CardTitle className="text-lg">Email</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <p className="text-orange-600 font-semibold">kontakt@bibliotekapromptow.pl</p>
+                <p className="text-orange-600 font-semibold">bibliotekapromptow@gmail.com</p>
                 <p className="text-sm text-gray-500 mt-2">Odpowiemy w ciągu 24 godzin</p>
               </CardContent>
             </Card>

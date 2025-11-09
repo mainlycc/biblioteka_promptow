@@ -116,7 +116,7 @@ export default function RegulaminPage() {
             <div>
               <h2 className="text-xl font-semibold mb-4">§ 6. Reklamacje</h2>
               <p className="mb-3">
-                Wszelkie reklamacje dotyczące działania Serwisu lub świadczonych usług należy zgłaszać na adres e-mail Administratora: kontakt@bibliotekapromptow.pl.
+                Wszelkie reklamacje dotyczące działania Serwisu lub świadczonych usług należy zgłaszać na adres e-mail Administratora: bibliotekapromptow@gmail.com.
               </p>
               <p className="mb-3">
                 Reklamacja powinna zawierać dokładny opis problemu oraz dane kontaktowe osoby zgłaszającej reklamację.
