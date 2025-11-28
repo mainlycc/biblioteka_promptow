@@ -9,6 +9,15 @@ import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ToastNotification } from "./toast-notification";
 import { useSearch } from "@/contexts/search-context";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Prompt {
   id: string;
@@ -30,16 +39,24 @@ interface Prompt {
   created_at: string;
 }
 
+const ITEMS_PER_PAGE = 16;
+
 export function PromptGrid() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const { searchQuery } = useSearch();
 
   useEffect(() => {
     fetchPrompts();
   }, []);
+
+  // Resetuj do pierwszej strony przy zmianie wyszukiwania
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const fetchPrompts = async () => {
     try {
@@ -76,6 +93,64 @@ export function PromptGrid() {
     });
   }, [prompts, searchQuery]);
 
+  // Obliczanie paginacji
+  const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
+  
+  // Pobierz prompty dla aktualnej strony
+  const paginatedPrompts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredPrompts.slice(startIndex, endIndex);
+  }, [filteredPrompts, currentPage]);
+
+  // Generowanie numerów stron do wyświetlenia
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      // Jeśli jest mało stron, pokaż wszystkie
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Zawsze pokazuj pierwszą stronę
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push('ellipsis');
+      }
+
+      // Pokaż strony wokół aktualnej
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== totalPages) {
+          pages.push(i);
+        }
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push('ellipsis');
+      }
+
+      // Zawsze pokazuj ostatnią stronę
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleCopy = (idx: number) => {
     setCopied(idx);
     setShowToast(true);
@@ -92,13 +167,11 @@ export function PromptGrid() {
         show={showToast}
         onClose={() => setShowToast(false)}
       />
-      <div className="text-muted-foreground mb-4">
-        {searchQuery.trim() 
-          ? `Znaleziono ${filteredPrompts.length} promptów dla "${searchQuery}"`
-          : `Znaleziono ${prompts.length} promptów tekstowych`}
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 items-stretch">
-        {filteredPrompts.map((prompt, idx) => (
+        {paginatedPrompts.map((prompt, idx) => {
+          // Oblicz globalny indeks dla kopiowania
+          const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
+          return (
           <div key={prompt.id} className="block h-full">
             <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[280px] md:min-h-[300px]">
               <Link href={`/prompt/${prompt.id}`} className="block">
@@ -165,14 +238,79 @@ export function PromptGrid() {
                 </div>
                 <CopyButton
                   text={`${prompt.description}\n${prompt.tags.join(" ")}\nAutor: ${prompt.author}`}
-                  onCopied={() => handleCopy(idx)}
-                  copied={copied === idx}
+                  onCopied={() => handleCopy(globalIdx)}
+                  copied={copied === globalIdx}
                 />
               </div>
             </Card>
           </div>
-        ))}
+        );
+        })}
       </div>
+      
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) {
+                      handlePageChange(currentPage - 1);
+                    }
+                  }}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                  aria-label="Poprzednia strona"
+                />
+              </PaginationItem>
+              
+              {getPageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === 'ellipsis' ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(page as number);
+                      }}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+              
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) {
+                      handlePageChange(currentPage + 1);
+                    }
+                  }}
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                  aria-label="Następna strona"
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 } 
