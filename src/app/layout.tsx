@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { PerformanceOptimizer } from "@/components/performance-optimizer";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { SearchProvider } from "@/contexts/search-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -137,20 +138,22 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <ErrorBoundary>
-          <Header />
-          <div className="flex flex-1">
-            <div className="hidden md:block">
-              <Sidebar />
+          <SearchProvider>
+            <Header />
+            <div className="flex flex-1">
+              <div className="hidden md:block">
+                <Sidebar />
+              </div>
+              <main className="flex-1 w-full">
+                {children}
+              </main>
             </div>
-            <main className="flex-1 w-full">
-              {children}
-            </main>
-          </div>
-          <Footer />
-          <Toaster />
-          <Analytics />
-          <GoogleAnalytics />
-          <PerformanceOptimizer />
+            <Footer />
+            <Toaster />
+            <Analytics />
+            <GoogleAnalytics />
+            <PerformanceOptimizer />
+          </SearchProvider>
         </ErrorBoundary>
       </body>
     </html>

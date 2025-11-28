@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import CopyButton from "./comp-105";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ToastNotification } from "./toast-notification";
+import { useSearch } from "@/contexts/search-context";
 
 interface Prompt {
   id: string;
@@ -34,6 +35,7 @@ export function PromptGrid() {
   const [copied, setCopied] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     fetchPrompts();
@@ -56,6 +58,24 @@ export function PromptGrid() {
     }
   };
 
+  // Filtrowanie promptów po tagach na podstawie wyszukiwania
+  const filteredPrompts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return prompts;
+    }
+
+    const query = searchQuery.trim().toLowerCase();
+    return prompts.filter((prompt) => {
+      if (!prompt.tags || prompt.tags.length === 0) {
+        return false;
+      }
+      // Sprawdź czy którykolwiek tag zawiera wpisane słowo
+      return prompt.tags.some((tag) => 
+        tag.toLowerCase().includes(query)
+      );
+    });
+  }, [prompts, searchQuery]);
+
   const handleCopy = (idx: number) => {
     setCopied(idx);
     setShowToast(true);
@@ -72,9 +92,13 @@ export function PromptGrid() {
         show={showToast}
         onClose={() => setShowToast(false)}
       />
-      <div className="text-muted-foreground mb-4">Znaleziono {prompts.length} promptów tekstowych</div>
+      <div className="text-muted-foreground mb-4">
+        {searchQuery.trim() 
+          ? `Znaleziono ${filteredPrompts.length} promptów dla "${searchQuery}"`
+          : `Znaleziono ${prompts.length} promptów tekstowych`}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 items-stretch">
-        {prompts.map((prompt, idx) => (
+        {filteredPrompts.map((prompt, idx) => (
           <div key={prompt.id} className="block h-full">
             <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[280px] md:min-h-[300px]">
               <Link href={`/prompt/${prompt.id}`} className="block">

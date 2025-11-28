@@ -1,10 +1,15 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNavigation } from "@/components/mobile-navigation";
+import { useSearch } from "@/contexts/search-context";
 
 export function Header() {
+  const { searchQuery, setSearchQuery } = useSearch();
+
   return (
     <header className="flex items-center justify-between bg-white border-b px-4 md:px-6 lg:px-8 py-2 md:py-3 gap-2 md:gap-4">
       {/* Left section - Mobile menu + Logo */}
@@ -26,7 +31,12 @@ export function Header() {
       
       {/* Center section - Search */}
       <div className="flex-1 flex justify-center max-w-xs md:max-w-xs lg:max-w-md mx-2 min-w-0">
-        <Input placeholder="Szukaj promptów..." className="w-full" />
+        <Input 
+          placeholder="Szukaj promptów..." 
+          className="w-full"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
       
       {/* Right section - Newsletter button */}
