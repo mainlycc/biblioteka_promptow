@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, User, Clock } from "lucide-react"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { BreadcrumbSchema } from "@/components/json-ld-schema"
-import { getBlogPosts, getBlogStats, testSupabaseConnection } from "@/lib/blog"
+import { getAllPosts } from "@/lib/blog"
+import { getMDXPosts } from "@/lib/mdx-posts"
 import { BlogError } from "@/components/blog-error"
 
 // Ustawienia rewalidacji cache - strona będzie się odświeżać co 30 sekund
@@ -36,45 +37,68 @@ export default async function BlogPage() {
   let error: string | null = null
 
   try {
-    console.log('🔍 Próba pobrania postów bloga z Supabase...')
+    console.log('🔍 Próba pobrania postów bloga z Supabase i plików MDX...')
     
-    // Test połączenia z Supabase
-    const connectionTest = await testSupabaseConnection()
-    console.log('🔗 Test połączenia:', connectionTest)
+    // Pobierz posty z obu źródeł równolegle
+    const [supabasePosts, mdxPosts] = await Promise.all([
+      getAllPosts().catch(() => []),
+      getMDXPosts().catch(() => []),
+    ]);
+
+    console.log('📊 Pobrano postów z Supabase:', supabasePosts.length);
+    console.log('📊 Pobrano postów MDX:', mdxPosts.length);
     
-    if (!connectionTest.isConnected) {
-      throw new Error(`Błąd połączenia z Supabase: ${connectionTest.error}`)
-    }
-    
-    if (!connectionTest.tableExists) {
-      throw new Error('Tabela blog_posts nie istnieje. Uruchom skrypt SQL z pliku supabase-blog-setup.sql')
-    }
-    
-    // Pobierz statystyki bloga, aby zobaczyć ile postów jest w bazie
-    const stats = await getBlogStats()
-    console.log('📊 Statystyki bloga:', stats)
-    
-    // Pobierz wszystkie posty bez limitu, aby sprawdzić ile ich jest
-    blogPosts = await getBlogPosts({})
-    console.log('✅ Pobrano postów:', blogPosts.length, 'z', stats.totalPosts, 'dostępnych w bazie')
+    // Połącz posty i posortuj według daty publikacji
+    const allPosts = [
+      ...supabasePosts.map((post) => ({
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt || '',
+        author: post.author,
+        category: post.category,
+        tags: post.tags || [],
+        published_at: post.published_at,
+        read_time: post.read_time,
+        featured_image: post.featured_image,
+        date: post.published_at,
+        source: 'supabase' as const,
+      })),
+      ...mdxPosts.map((post) => ({
+        id: `mdx-${post.slug}`,
+        slug: post.slug,
+        title: post.title,
+        excerpt: '',
+        author: 'Autor',
+        category: 'MDX',
+        tags: [],
+        published_at: null,
+        read_time: null,
+        featured_image: null,
+        date: null,
+        source: 'mdx' as const,
+      })),
+    ].sort((a, b) => {
+      // Sortuj według daty - najnowsze pierwsze
+      if (a.date && b.date) {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      if (a.date) return -1;
+      if (b.date) return 1;
+      return 0;
+    });
+
+    blogPosts = allPosts;
     
     // Jeśli jest więcej niż 12 postów, pokaż tylko pierwsze 12
     if (blogPosts.length > 12) {
-      blogPosts = blogPosts.slice(0, 12)
-      console.log('📝 Ograniczono do 12 postów z', blogPosts.length, 'dostępnych')
+      blogPosts = blogPosts.slice(0, 12);
+      console.log('📝 Ograniczono do 12 postów z', allPosts.length, 'dostępnych');
     }
   } catch (err: any) {
-    console.error('❌ Błąd podczas pobierania postów bloga:', err)
-    
-    // Sprawdź czy to błąd konfiguracji Supabase
-    if (err.message?.includes('Invalid API key') || err.message?.includes('Failed to fetch')) {
-      error = 'Błąd konfiguracji bazy danych. Sprawdź ustawienia Supabase w pliku .env.local'
-    } else if (err.message?.includes('relation "blog_posts" does not exist')) {
-      error = 'Tabela blog_posts nie istnieje. Uruchom skrypt SQL z pliku supabase-blog-setup.sql'
-    } else {
-      error = `Nie udało się załadować postów bloga: ${err.message || 'Nieznany błąd'}`
-    }
-    blogPosts = []
+    console.error('❌ Błąd podczas pobierania postów bloga:', err);
+    error = `Nie udało się załadować postów bloga: ${err.message || 'Nieznany błąd'}`;
+    blogPosts = [];
   }
 
   if (error) {
@@ -121,7 +145,7 @@ export default async function BlogPage() {
                   <Badge variant="secondary" className="text-xs">
                     {post.category}
                   </Badge>
-                  {post.tags.length > 0 && (
+                  {post.tags && post.tags.length > 0 && (
                     <Badge variant="outline" className="text-xs">
                       {post.tags[0]}
                     </Badge>
@@ -137,26 +161,32 @@ export default async function BlogPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
+                {post.excerpt && (
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+                )}
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
                     <User className="h-3 w-3" />
                     <span>{post.author}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{post.read_time} min</span>
-                  </div>
+                  {post.read_time && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{post.read_time} min</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>{new Date(post.published_at).toLocaleDateString('pl-PL')}</span>
-                  </div>
+                  {post.published_at && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      <span>{new Date(post.published_at).toLocaleDateString('pl-PL')}</span>
+                    </div>
+                  )}
                   <Button 
                     variant="outline" 
                     size="sm"

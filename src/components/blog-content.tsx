@@ -21,32 +21,32 @@ export function BlogContent({ content, className }: BlogContentProps) {
         components={{
           // Nagłówki
           h1: ({ children, ...props }) => (
-            <h1 className="text-3xl font-bold mb-6 mt-8 text-black border-b border-gray-200 pb-2" {...props}>
+            <h1 className="font-bold text-black border-b border-gray-200 pb-2" {...props}>
               {children}
             </h1>
           ),
           h2: ({ children, ...props }) => (
-            <h2 className="text-2xl font-bold mb-4 mt-6 text-black" {...props}>
+            <h2 className="font-bold text-black" {...props}>
               {children}
             </h2>
           ),
           h3: ({ children, ...props }) => (
-            <h3 className="text-xl font-semibold mb-3 mt-5 text-black" {...props}>
+            <h3 className="font-semibold text-black" {...props}>
               {children}
             </h3>
           ),
           h4: ({ children, ...props }) => (
-            <h4 className="text-lg font-semibold mb-2 mt-4 text-black" {...props}>
+            <h4 className="font-semibold text-black" {...props}>
               {children}
             </h4>
           ),
           h5: ({ children, ...props }) => (
-            <h5 className="text-base font-semibold mb-2 mt-3 text-black" {...props}>
+            <h5 className="font-semibold text-black" {...props}>
               {children}
             </h5>
           ),
           h6: ({ children, ...props }) => (
-            <h6 className="text-sm font-semibold mb-2 mt-3 text-black" {...props}>
+            <h6 className="font-semibold text-black" {...props}>
               {children}
             </h6>
           ),
@@ -212,10 +212,10 @@ export function InfoBlock({
   className?: string 
 }) {
   const variants = {
-    info: "border-blue-200 bg-blue-50 text-blue-800",
-    warning: "border-yellow-200 bg-yellow-50 text-yellow-800",
-    success: "border-green-200 bg-green-50 text-green-800",
-    error: "border-red-200 bg-red-50 text-red-800"
+    info: "border-[1px] border-[#f97316] bg-[#fff8f0] text-[#1a1a1a]",
+    warning: "border-[1px] border-[#f97316] bg-[#fff4e5] text-[#1a1a1a]",
+    success: "border-[1px] border-[#16a34a] bg-[#ecfdf3] text-[#14532d]",
+    error: "border-[1px] border-[#dc2626] bg-[#fef2f2] text-[#7f1d1d]"
   }
 
   const icons = {
@@ -226,9 +226,9 @@ export function InfoBlock({
   }
 
   return (
-    <Card className={cn("mb-6", variants[type], className)}>
+    <Card className={cn("mb-6 rounded-xl", variants[type], className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="text-base font-semibold flex items-center gap-2 tracking-tight">
           <span>{icons[type]}</span>
           {title || type.charAt(0).toUpperCase() + type.slice(1)}
         </CardTitle>
@@ -253,10 +253,10 @@ export function CodeExample({
   className?: string 
 }) {
   return (
-    <Card className={cn("mb-6 border-gray-200", className)}>
+    <Card className={cn("mb-6 border-[1px] border-[#e5e7eb] bg-[#fff8f0] rounded-xl", className)}>
       {title && (
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-gray-800">{title}</CardTitle>
+          <CardTitle className="text-base font-semibold text-[#1a1a1a] tracking-tight">{title}</CardTitle>
         </CardHeader>
       )}
       <CardContent>

@@ -331,8 +331,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Blog content styles */
 .blog-content {
-  color: #1f2937;
-  line-height: 1.7;
+  color: #000000;
+  line-height: 1.75;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .blog-content h1,
@@ -341,54 +346,62 @@ h1, h2, h3, h4, h5, h6 {
 .blog-content h4,
 .blog-content h5,
 .blog-content h6 {
-  color: var(--main-orange-dark);
+  color: #000000;
   font-weight: 600;
-  margin-top: 2rem;
+  margin-top: 3rem;
   margin-bottom: 1rem;
 }
 
 .blog-content h1 {
-  font-size: 2.5rem;
+  font-size: 42px;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 0.5rem;
 }
 
 .blog-content h2 {
-  font-size: 2rem;
+  font-size: 30px;
 }
 
 .blog-content h3 {
-  font-size: 1.5rem;
+  font-size: 24px;
 }
 
 .blog-content h4 {
-  font-size: 1.25rem;
+  font-size: 20px;
+}
+
+.blog-content h5 {
+  font-size: 18px;
+}
+
+.blog-content h6 {
+  font-size: 16px;
 }
 
 .blog-content p {
-  margin-bottom: 1.5rem;
-  color: #374151;
+  margin-bottom: 1.75rem;
+  color: #000000;
+  font-size: 18px;
 }
 
 .blog-content ul,
 .blog-content ol {
-  margin-bottom: 1.5rem;
-  padding-left: 1.5rem;
+  margin-bottom: 1.75rem;
+  padding-left: 1.75rem;
 }
 
 .blog-content li {
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: #000000;
 }
 
 .blog-content blockquote {
-  border-left: 4px solid var(--main-orange);
-  padding-left: 1rem;
-  margin: 1.5rem 0;
-  background: #f9fafb;
-  padding: 1rem;
+  border-left: 5px solid var(--main-orange);
+  margin: 2.25rem 0;
+  background: #fafafa;
+  padding: 1.5rem 1.75rem;
   font-style: italic;
-  color: #6b7280;
+  color: #333333;
 }
 
 .blog-content code {

@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
+import { getAllPosts } from '@/lib/blog'
+import { getMDXPosts } from '@/lib/mdx-posts'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://bibliotekapromptow.pl'
@@ -94,23 +96,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Błąd podczas pobierania promptów dla sitemap:', error)
   }
 
-  // Pobierz posty blogowe z Supabase
+  // Pobierz posty blogowe z Supabase i pliki MDX
   let blogPages: MetadataRoute.Sitemap = []
   try {
-    const { data: posts } = await supabase
-      .from('blog_posts')
-      .select('slug, published_at, updated_at')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-    
-    if (posts) {
-      blogPages = posts.map((post) => ({
-        url: `${baseUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.updated_at || post.published_at),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }))
-    }
+    const [supabasePosts, mdxPosts] = await Promise.all([
+      getAllPosts().catch(() => []),
+      getMDXPosts().catch(() => []),
+    ])
+
+    // Posty z Supabase
+    const supabaseBlogPages = supabasePosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.published_at || new Date()),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
+
+    // Posty MDX
+    const mdxBlogPages = mdxPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
+
+    blogPages = [...supabaseBlogPages, ...mdxBlogPages]
   } catch (error) {
     console.error('Błąd podczas pobierania postów blogowych dla sitemap:', error)
   }

@@ -184,6 +184,34 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 /**
+ * Pobiera wszystkie slugi postów (dla generateStaticParams)
+ * Zgodnie z dokumentacją IMPLEMENTACJA_BLOGA_MDX.md
+ */
+export async function getAllPostSlugs(): Promise<string[]> {
+  try {
+    const posts = await getBlogPosts({});
+    return posts.map((post) => post.slug);
+  } catch (error) {
+    console.error('Błąd w getAllPostSlugs:', error);
+    return [];
+  }
+}
+
+/**
+ * Alias dla getBlogPosts - zgodnie z dokumentacją
+ */
+export async function getAllPosts(): Promise<BlogPostPreview[]> {
+  return getBlogPosts({});
+}
+
+/**
+ * Alias dla getBlogPostBySlug - zgodnie z dokumentacją
+ */
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  return getBlogPostBySlug(slug);
+}
+
+/**
  * Pobiera pojedynczy post bloga po ID
  */
 export async function getBlogPostById(id: number): Promise<BlogPost | null> {
@@ -215,6 +243,11 @@ export async function getBlogPostById(id: number): Promise<BlogPost | null> {
  */
 export async function getRelatedBlogPosts(currentPostId: number, category: string, tags: string[], limit: number = 3): Promise<BlogPostPreview[]> {
   try {
+    const tagsArray = tags || []
+    const tagsFilter = tagsArray.length > 0 ? `tags.cs.{${tagsArray.join(',')}}` : ''
+    const categoryFilter = `category.eq.${category}`
+    const orFilter = tagsFilter ? `${categoryFilter},${tagsFilter}` : categoryFilter
+    
     const { data, error } = await supabase
       .from('blog_posts')
       .select(`
@@ -231,7 +264,7 @@ export async function getRelatedBlogPosts(currentPostId: number, category: strin
       `)
       .eq('is_published', true)
       .neq('id', currentPostId)
-      .or(`category.eq.${category},tags.cs.{${tags.join(',')}}`)
+      .or(orFilter)
       .order('published_at', { ascending: false })
       .limit(limit)
 

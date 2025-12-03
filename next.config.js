@@ -1,7 +1,12 @@
+const createMDX = require('@next/mdx');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  
+  // Dodaj rozszerzenia MDX do obsługiwanych typów plików
+  pageExtensions: ['mdx', 'ts', 'tsx'],
   
   // Optymalizacja obrazów
   images: {
@@ -62,6 +67,9 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Włącz eksperymentalne wsparcie MDX (Rust compiler - szybsze)
+    // Jeśli potrzebujesz pluginów rehype/remark, ustaw na false
+    mdxRs: true,
   },
 
   // Webpack optymalizacje
@@ -80,4 +88,7 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig; 
+// Utwórz wrapper MDX
+const withMDX = createMDX({});
+
+module.exports = withMDX(nextConfig); 

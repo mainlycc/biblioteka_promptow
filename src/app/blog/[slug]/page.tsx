@@ -2,22 +2,38 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Calendar, User, Clock, Share2 } from "lucide-react"
-import { getBlogPostBySlug, getRelatedBlogPosts } from "@/lib/blog"
+import { getBlogPostBySlug, getRelatedBlogPosts, getAllPostSlugs } from "@/lib/blog"
 import { BlogPostError } from "@/components/blog-error"
-import { BlogContent } from "@/components/blog-content"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import { useMDXComponents } from '@/mdx-components'
+import { ScrollToTop } from '@/components/scroll-to-top'
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string
+  }>
+}
+
+// Generowanie statycznych ścieżek (SSG) dla postów z bazy danych
+export async function generateStaticParams() {
+  try {
+    const slugs = await getAllPostSlugs();
+    return slugs.map((slug) => ({
+      slug,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
   }
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const post = await getBlogPostBySlug(params.slug)
+    const post = await getBlogPostBySlug(slug)
     
     if (!post) {
       return {
@@ -58,19 +74,20 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params;
   let post: any = null
   let relatedPosts: any[] = []
   let error: string | null = null
 
   try {
-    post = await getBlogPostBySlug(params.slug)
+    post = await getBlogPostBySlug(slug)
     
     if (!post) {
       notFound()
     }
 
     // Pobierz powiązane posty
-    relatedPosts = await getRelatedBlogPosts(post.id, post.category, post.tags, 2)
+    relatedPosts = await getRelatedBlogPosts(post.id, post.category, post.tags || [], 2)
     
   } catch (err) {
     console.error('Błąd podczas pobierania posta bloga:', err)
@@ -84,6 +101,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound()
   }
+
+  const components = useMDXComponents();
 
   return (
     <>
@@ -111,7 +130,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Badge variant="secondary">{post.category}</Badge>
-          {post.tags.length > 0 && (
+          {post.tags && post.tags.length > 0 && (
             <>
               <span className="text-sm text-muted-foreground">•</span>
               <Badge variant="outline" className="text-xs">
@@ -148,12 +167,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </div>
 
       {/* Article Content */}
-      <article>
-        <BlogContent content={post.content} />
+      <article className="blog-content">
+        <MDXRemote source={post.content} components={components} />
       </article>
 
       {/* Related Articles */}
-      {relatedPosts.length > 0 && (
+      {relatedPosts && relatedPosts.length > 0 && (
         <div className="mt-12 pt-8 border-t">
           <h3 className="text-xl font-bold mb-4 text-black">Powiązane artykuły</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,6 +197,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       )}
       </div>
+      <ScrollToTop />
     </>
   )
 }
