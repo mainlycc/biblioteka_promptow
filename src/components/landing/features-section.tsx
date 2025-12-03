@@ -50,7 +50,8 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-background rounded-2xl border border-border p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+              className="bg-background rounded-2xl border p-6 hover:shadow-lg transition-all duration-300"
+              style={{ borderColor: 'var(--main-orange)' }}
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <feature.icon className="h-6 w-6 text-primary" />
@@ -64,3 +65,4 @@ export function FeaturesSection() {
     </section>
   )
 }
+

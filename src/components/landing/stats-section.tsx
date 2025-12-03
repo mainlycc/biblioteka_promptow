@@ -20,7 +20,7 @@ export function StatsSection() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center p-6 rounded-2xl bg-secondary/50 border border-border">
+            <div key={stat.label} className="text-center p-6 rounded-2xl bg-secondary/50 border" style={{ borderColor: 'var(--main-orange)' }}>
               <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </div>
@@ -30,3 +30,4 @@ export function StatsSection() {
     </section>
   )
 }
+

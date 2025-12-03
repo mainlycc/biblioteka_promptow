@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/header-dashboard";
-import Footer from "@/components/footer-dashboard";
-import { Sidebar } from "@/components/sidebar-dashboard";
+import { ConditionalLayout } from "@/components/conditional-layout";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from "@/components/google-analytics";
@@ -139,16 +137,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <ErrorBoundary>
           <SearchProvider>
-            <Header />
-            <div className="flex flex-1">
-              <div className="hidden md:block">
-                <Sidebar />
-              </div>
-              <main className="flex-1 w-full">
-                {children}
-              </main>
-            </div>
-            <Footer />
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
             <Toaster />
             <Analytics />
             <GoogleAnalytics />

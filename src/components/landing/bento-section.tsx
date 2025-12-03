@@ -14,7 +14,7 @@ export function BentoSection() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div className="bg-background rounded-2xl border border-border p-6 hover:shadow-lg transition-all">
+          <div className="bg-background rounded-2xl border p-6 hover:shadow-lg transition-all" style={{ borderColor: 'var(--main-orange)' }}>
             <div className="flex items-center gap-3 mb-4">
               <MessageSquare className="h-5 w-5 text-primary" />
               <span className="font-medium text-foreground">Czatuj z AI</span>
@@ -35,7 +35,7 @@ export function BentoSection() {
             </div>
           </div>
 
-          <div className="bg-background rounded-2xl border border-border p-6 hover:shadow-lg transition-all">
+          <div className="bg-background rounded-2xl border p-6 hover:shadow-lg transition-all" style={{ borderColor: 'var(--main-orange)' }}>
             <div className="flex items-center gap-3 mb-4">
               <Users className="h-5 w-5 text-primary" />
               <span className="font-medium text-foreground">Zaproś zespół</span>
@@ -62,3 +62,4 @@ export function BentoSection() {
     </section>
   )
 }
+

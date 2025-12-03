@@ -1,5 +1,12 @@
-import { PromptGrid } from "@/components/prompt-grid"
-import { OrganizationSchema, WebsiteSchema } from "@/components/json-ld-schema"
+import { Header } from "@/components/header-dashboard"
+import { HeroSection } from "@/components/landing/hero-section"
+import { TrustedBy } from "@/components/landing/trusted-by"
+import { StatsSection } from "@/components/landing/stats-section"
+import { FeaturesSection } from "@/components/landing/features-section"
+import { BentoSection } from "@/components/landing/bento-section"
+import { TestimonialsSection } from "@/components/landing/testimonials-section"
+import { CTASection } from "@/components/landing/cta-section"
+import Footer from "@/components/footer-dashboard"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -29,14 +36,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <>
-      <OrganizationSchema />
-      <WebsiteSchema />
-      <main className="flex-1 p-4 md:p-8 pt-4">
-        <PromptGrid />
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main>
+        <HeroSection />
+        <TrustedBy />
+        <StatsSection />
+        <FeaturesSection />
+        <BentoSection />
+        <TestimonialsSection />
+        <CTASection />
       </main>
-    </>
+      <Footer />
+    </div>
   )
 }

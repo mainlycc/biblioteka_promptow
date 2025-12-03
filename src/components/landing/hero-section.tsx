@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles, Copy, Check } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
 
 export function HeroSection() {
   const [copied, setCopied] = useState(false)
@@ -63,40 +64,42 @@ Temat: [TEMAT]`,
   }
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-secondary/50 to-background py-20 md:py-28">
+    <section className="relative overflow-hidden bg-gradient-to-b from-secondary/50 to-background pt-12 pb-20 md:pt-16 md:pb-28">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
 
       <div className="container mx-auto px-4 md:px-6 relative">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border px-4 py-1.5 text-sm font-medium text-primary mb-4" style={{ borderColor: 'var(--main-orange)' }}>
             <Sparkles className="h-4 w-4" />
             Ponad 1000+ gotowych promptów
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">
             Odkryj moc <span className="text-primary">AI</span> z gotowymi{" "}
             <span className="text-primary">promptami</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 text-balance">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-6 text-balance">
             Twórz lepsze treści, oszczędzaj czas i wykorzystaj pełny potencjał sztucznej inteligencji. Gotowe prompty do
             ChatGPT, Midjourney, DALL·E i wielu innych.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 text-base px-8">
-              Rozpocznij za darmo
-              <ArrowRight className="h-4 w-4" />
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 text-base px-8" asChild>
+              <Link href="/prompty">
+                Rozpocznij za darmo
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 bg-transparent">
-              Zobacz prompty
+            <Button size="lg" variant="outline" className="text-base px-8 bg-transparent" asChild>
+              <Link href="/prompty">Zobacz prompty</Link>
             </Button>
           </div>
 
           <div className="relative w-full max-w-3xl mx-auto h-[420px]">
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-3xl blur-2xl" />
 
-            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 border-primary/30 shadow-lg p-4 flex flex-col left-0 top-8 -rotate-12">
+            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 shadow-lg p-4 flex flex-col left-0 top-8 -rotate-12" style={{ borderColor: 'var(--main-orange-30)' }}>
               <div className="mb-2">
                 <h3 className="text-sm font-bold text-foreground">{cards[0].title}</h3>
               </div>
@@ -115,7 +118,7 @@ Temat: [TEMAT]`,
               </div>
             </div>
 
-            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 border-primary/50 shadow-xl p-4 flex flex-col left-12 top-14 -rotate-6">
+            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 shadow-xl p-4 flex flex-col left-12 top-14 -rotate-6" style={{ borderColor: 'var(--main-orange-50)' }}>
               <div className="mb-2">
                 <h3 className="text-sm font-bold text-foreground">{cards[1].title}</h3>
               </div>
@@ -134,7 +137,7 @@ Temat: [TEMAT]`,
               </div>
             </div>
 
-            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 border-primary/30 shadow-lg p-4 flex flex-col right-0 top-8 rotate-12">
+            <div className="absolute w-[300px] h-[300px] bg-background rounded-2xl border-2 shadow-lg p-4 flex flex-col right-0 top-8 rotate-12" style={{ borderColor: 'rgba(255, 128, 0, 0.3)' }}>
               <div className="mb-2">
                 <h3 className="text-sm font-bold text-foreground">{cards[3].title}</h3>
               </div>
@@ -153,7 +156,7 @@ Temat: [TEMAT]`,
               </div>
             </div>
 
-            <div className="absolute w-[320px] h-[320px] bg-background rounded-2xl border-2 border-primary shadow-2xl p-5 flex flex-col left-1/2 top-12 -translate-x-1/2 z-10">
+            <div className="absolute w-[320px] h-[320px] bg-background rounded-2xl border-2 shadow-2xl p-5 flex flex-col left-1/2 top-12 -translate-x-1/2 z-10" style={{ borderColor: 'var(--main-orange)' }}>
               <div className="mb-2">
                 <h3 className="text-base font-bold text-foreground">{cards[2].title}</h3>
               </div>
@@ -172,7 +175,8 @@ Temat: [TEMAT]`,
                   ))}
                 </div>
                 <button
-                  className="p-2.5 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                  className="p-2.5 rounded-lg border-2 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                  style={{ borderColor: 'var(--main-orange)' }}
                   onClick={handleCopy}
                   aria-label="Kopiuj prompt"
                 >
@@ -186,3 +190,4 @@ Temat: [TEMAT]`,
     </section>
   )
 }
+

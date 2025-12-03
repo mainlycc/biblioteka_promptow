@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNavigation } from "@/components/mobile-navigation";
@@ -9,6 +10,8 @@ import { useSearch } from "@/contexts/search-context";
 
 export function Header() {
   const { searchQuery, setSearchQuery } = useSearch();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   return (
     <header className="flex items-center justify-between bg-white border-b px-4 md:px-6 lg:px-8 py-2 md:py-3 gap-2 md:gap-4">
@@ -29,7 +32,8 @@ export function Header() {
         </Link>
       </div>
       
-      {/* Center section - Search */}
+      {/* Center section - Search (ukryte na stronie głównej) */}
+      {!isHomePage && (
       <div className="flex-1 flex justify-center max-w-xs md:max-w-xs lg:max-w-md mx-2 min-w-0">
         <Input 
           placeholder="Szukaj promptów..." 
@@ -38,6 +42,7 @@ export function Header() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
+      )}
       
       {/* Right section - Newsletter button */}
       <div className="flex items-center flex-shrink-0">

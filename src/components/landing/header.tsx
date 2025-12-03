@@ -18,12 +18,6 @@ export function Header() {
           >
             Funkcje
           </Link>
-          <Link
-            href="#faq"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            FAQ
-          </Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -36,3 +30,4 @@ export function Header() {
     </header>
   )
 }
+

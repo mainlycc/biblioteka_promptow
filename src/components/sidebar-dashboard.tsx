@@ -16,7 +16,7 @@ const routes = [
   {
     label: "Prompty tekstowe",
     icon: FileText,
-    href: "/",
+    href: "/prompty",
     color: "text-pink-700",
   },
   {
