@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { ArrowLeft, Calendar, User, Clock, Share2 } from "lucide-react"
 import { getBlogPostBySlug, getRelatedBlogPosts, getAllPostSlugs } from "@/lib/blog"
 import { BlogPostError } from "@/components/blog-error"
@@ -10,6 +12,17 @@ import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { useMDXComponents } from '@/mdx-components'
 import { ScrollToTop } from '@/components/scroll-to-top'
+
+const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
+  if (!featuredImage) return null
+  if (featuredImage.startsWith('http')) return featuredImage
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) return null
+
+  const normalizedPath = featuredImage.replace(/^\/+/, '')
+  return `${supabaseUrl}/storage/v1/object/public/${normalizedPath}`
+}
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -34,6 +47,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const { slug } = await params;
   try {
     const post = await getBlogPostBySlug(slug)
+    const featuredImageUrl = resolveFeaturedImageUrl(post?.featured_image)
     
     if (!post) {
       return {
@@ -51,6 +65,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         description: post.meta_description || post.excerpt || "",
         url: `https://bibliotekapromptow.pl/blog/${post.slug}`,
         type: "article",
+        images: featuredImageUrl ? [featuredImageUrl] : undefined,
         publishedTime: post.published_at,
         modifiedTime: post.updated_at,
         authors: [post.author],
@@ -59,6 +74,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       twitter: {
         title: post.meta_title || post.title,
         description: post.meta_description || post.excerpt || "",
+        images: featuredImageUrl ? [featuredImageUrl] : undefined,
         card: "summary_large_image",
       },
       alternates: {
@@ -102,11 +118,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound()
   }
 
+  const featuredImageUrl = resolveFeaturedImageUrl(post.featured_image)
   const components = useMDXComponents();
 
   return (
     <>
-      <ArticleSchema article={post} />
+      <ArticleSchema article={{ ...post, image_url: featuredImageUrl || undefined }} />
       <BreadcrumbSchema 
         items={[
           { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
@@ -165,6 +182,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </Button>
         </div>
       </div>
+
+      {featuredImageUrl && (
+        <Card className="mb-10 overflow-hidden border bg-muted/30">
+          <AspectRatio ratio={16 / 9}>
+            <img
+              src={featuredImageUrl}
+              alt={`Ilustracja artykułu ${post.title}`}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </AspectRatio>
+        </Card>
+      )}
 
       {/* Article Content */}
       <article className="blog-content">
