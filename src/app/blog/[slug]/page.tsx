@@ -95,10 +95,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   let relatedPosts: any[] = []
   let error: string | null = null
 
+  console.log('📄 BlogPostPage - otrzymany slug:', {
+    slug,
+    slugEncoded: encodeURIComponent(slug),
+    slugDecoded: decodeURIComponent(slug),
+    slugLength: slug.length
+  })
+
   try {
     post = await getBlogPostBySlug(slug)
     
     if (!post) {
+      console.log('❌ BlogPostPage - post nie znaleziony dla slug:', slug)
       notFound()
     }
 
@@ -188,7 +196,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <AspectRatio ratio={16 / 9}>
             <img
               src={featuredImageUrl}
-              alt={`Ilustracja artykułu ${post.title}`}
+              alt={post.featured_image_alt || `Ilustracja artykułu ${post.title}`}
               className="h-full w-full object-cover"
               loading="lazy"
             />

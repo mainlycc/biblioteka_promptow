@@ -10,6 +10,7 @@ export interface BlogPost {
   read_time: number
   category: string
   featured_image: string | null
+  featured_image_alt: string | null
   is_published: boolean
   meta_title: string | null
   meta_description: string | null
@@ -27,6 +28,7 @@ export interface BlogPostPreview {
   read_time: number
   category: string
   featured_image: string | null
+  featured_image_alt: string | null
   tags: string[]
 }
 

@@ -85,6 +85,7 @@ export async function getBlogPosts(filters: BlogFilters = {}): Promise<BlogPostP
         read_time,
         category,
         featured_image,
+        featured_image_alt,
         tags
       `)
       .eq('is_published', true)
@@ -161,21 +162,61 @@ export async function getBlogPosts(filters: BlogFilters = {}): Promise<BlogPostP
  */
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const { data, error } = await supabase
+    // Dekoduj slug z URL (Next.js może przekazać zakodowany slug)
+    const decodedSlug = decodeURIComponent(slug)
+    
+    console.log('🔍 Szukanie posta po slug:', {
+      originalSlug: slug,
+      decodedSlug: decodedSlug,
+      slugLength: slug.length,
+      decodedSlugLength: decodedSlug.length
+    })
+    
+    // Spróbuj najpierw z zdekodowanym slugiem
+    let { data, error } = await supabase
       .from('blog_posts')
       .select('*')
-      .eq('slug', slug)
+      .eq('slug', decodedSlug)
       .eq('is_published', true)
       .single()
 
+    // Jeśli nie znaleziono, spróbuj z oryginalnym slugiem (na wypadek gdyby był już zdekodowany)
+    if (error && error.code === 'PGRST116' && slug !== decodedSlug) {
+      console.log('⚠️ Nie znaleziono z zdekodowanym slugiem, próbuję z oryginalnym...')
+      const result = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single()
+      
+      data = result.data
+      error = result.error
+    }
+
     if (error) {
       if (error.code === 'PGRST116') {
+        console.log('❌ Post nie znaleziony po slug:', decodedSlug)
+        // Sprawdź wszystkie slugi w bazie dla debugowania
+        const { data: allSlugs } = await supabase
+          .from('blog_posts')
+          .select('id, slug, title, is_published')
+          .limit(20)
+        
+        console.log('📋 Dostępne slugi w bazie:', allSlugs?.map(p => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          is_published: p.is_published
+        })))
+        
         return null // Post nie znaleziony
       }
       console.error('Błąd podczas pobierania posta bloga:', error)
       throw new Error('Nie udało się pobrać posta bloga')
     }
 
+    console.log('✅ Znaleziono post:', { id: data?.id, title: data?.title, slug: data?.slug })
     return data
   } catch (error) {
     console.error('Błąd w getBlogPostBySlug:', error)
@@ -260,6 +301,7 @@ export async function getRelatedBlogPosts(currentPostId: number, category: strin
         read_time,
         category,
         featured_image,
+        featured_image_alt,
         tags
       `)
       .eq('is_published', true)
@@ -321,6 +363,7 @@ export async function getBlogStats(): Promise<BlogStats> {
         read_time,
         category,
         featured_image,
+        featured_image_alt,
         tags
       `)
       .eq('is_published', true)

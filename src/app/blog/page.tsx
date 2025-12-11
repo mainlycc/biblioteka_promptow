@@ -61,6 +61,7 @@ export default async function BlogPage() {
         published_at: post.published_at,
         read_time: post.read_time,
         featured_image: post.featured_image,
+        featured_image_alt: post.featured_image_alt,
         date: post.published_at,
         source: 'supabase' as const,
       })),
