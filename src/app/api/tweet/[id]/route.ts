@@ -8,10 +8,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const tweetId = params.id
+    const { id: tweetId } = await params
     
     if (!tweetId) {
       return NextResponse.json(
