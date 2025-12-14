@@ -73,6 +73,24 @@ const nextConfig = {
 
   // Webpack optymalizacje
   webpack: (config, { dev, isServer }) => {
+    // Wymuś użycie jednej wersji React dla wszystkich modułów
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      react: require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+    };
+
+    // Wymuś użycie jednej wersji React w zależnościach
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        react: require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+      };
+    }
+
     if (!dev && !isServer) {
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,

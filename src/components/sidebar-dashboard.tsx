@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Search, Image as ImageIcon, Film, FileText } from "lucide-react"
-import React from "react"
 
 const routes = [
   {

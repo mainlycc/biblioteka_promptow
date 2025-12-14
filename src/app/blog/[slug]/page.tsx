@@ -10,7 +10,7 @@ import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { useMDXComponents } from '@/mdx-components'
+import { components } from '@/mdx-components'
 import { ScrollToTop } from '@/components/scroll-to-top'
 
 const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
@@ -29,6 +29,10 @@ interface BlogPostPageProps {
     slug: string
   }>
 }
+
+// Wyłącz statyczne generowanie - używamy dynamicznego renderowania
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 // Generowanie statycznych ścieżek (SSG) dla postów z bazy danych
 export async function generateStaticParams() {
@@ -127,7 +131,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const featuredImageUrl = resolveFeaturedImageUrl(post.featured_image)
-  const components = useMDXComponents();
 
   return (
     <>

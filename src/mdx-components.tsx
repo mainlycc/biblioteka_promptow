@@ -1,4 +1,4 @@
-import React, { ComponentPropsWithoutRef } from 'react';
+import { ComponentPropsWithoutRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { highlight } from 'sugar-high';
@@ -129,8 +129,11 @@ const components = {
   ),
 };
 
-// Eksportuj hook dla komponentów MDX
+// Eksportuj funkcję dla komponentów MDX (dla kompatybilności z MDX)
 export function useMDXComponents() {
   return components;
 }
+
+// Eksportuj bezpośrednio komponenty dla użycia w komponentach serwerowych
+export { components };
 
