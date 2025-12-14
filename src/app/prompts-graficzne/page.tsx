@@ -124,7 +124,7 @@ export default function PromptyGraficznePage() {
   return (
     <main className="flex-1 p-8 pt-4">
       <h1 className="text-2xl font-bold mb-4">Prompty graficzne</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
         {paginatedPrompts.map((prompt) => (
           <PromptImageCard key={prompt.id} prompt={prompt} />
         ))}

@@ -3,7 +3,6 @@ const createMDX = require('@next/mdx');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   
   // Dodaj rozszerzenia MDX do obsługiwanych typów plików
   pageExtensions: ['mdx', 'ts', 'tsx'],

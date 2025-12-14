@@ -7,6 +7,23 @@ import { Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+// Funkcja do konwersji ścieżek Supabase Storage na pełne publiczne URL-e
+const resolveImageUrl = (imageUrl?: string | null) => {
+  if (!imageUrl) return null
+  // Jeśli już jest pełny URL (http/https), zwróć bez zmian
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl
+  }
+  
+  // Konwertuj ścieżkę Supabase Storage na pełny URL
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) return imageUrl
+  
+  // Usuń wiodące slashe i zbuduj pełny URL
+  const normalizedPath = imageUrl.replace(/^\/+/, '')
+  return `${supabaseUrl}/storage/v1/object/public/${normalizedPath}`
+}
+
 interface TwitterIconProps {
   className?: string;
   [key: string]: unknown;
@@ -78,27 +95,32 @@ export function PromptImageCard({ prompt }: PromptImageCardProps) {
       {prompt.type === 'image' && photos.length > 0 && (
         <div className="px-4 pt-1">
           <div className="grid w-full aspect-square gap-1 grid-cols-2 grid-rows-2">
-            {photos.map((photo, index) => (
-              <img
-                key={photo}
-                src={photo}
-                alt={displayTitle}
-                className="w-full h-full object-cover object-center rounded-xl border shadow-sm"
-                style={{
-                  gridColumn: photoCount === 1 ? '1 / -1' : 
-                             photoCount === 2 ? 'span 1' : 
-                             photoCount === 3 ? (index === 0 ? '1 / 2' : '2 / 3') :
-                             'span 1',
-                  gridRow: photoCount === 1 ? '1 / -1' : 
-                          photoCount === 2 ? '1 / -1' : 
-                          photoCount === 3 ? (index === 0 ? '1 / -1' : (index === 1 ? '1 / 2' : '2 / 3')) :
-                          index < 2 ? '1 / 2' : '2 / 3'
-                }}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
-            ))}
+            {photos.map((photo, index) => {
+              const imageUrl = resolveImageUrl(photo)
+              if (!imageUrl) return null
+              
+              return (
+                <img
+                  key={photo}
+                  src={imageUrl}
+                  alt={displayTitle}
+                  className="w-full h-full object-cover object-center rounded-xl border shadow-sm"
+                  style={{
+                    gridColumn: photoCount === 1 ? '1 / -1' : 
+                               photoCount === 2 ? 'span 1' : 
+                               photoCount === 3 ? (index === 0 ? '1 / 2' : '2 / 3') :
+                               'span 1',
+                    gridRow: photoCount === 1 ? '1 / -1' : 
+                            photoCount === 2 ? '1 / -1' : 
+                            photoCount === 3 ? (index === 0 ? '1 / -1' : (index === 1 ? '1 / 2' : '2 / 3')) :
+                            index < 2 ? '1 / 2' : '2 / 3'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              )
+            })}
           </div>
         </div>
       )}

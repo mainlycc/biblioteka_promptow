@@ -46,6 +46,7 @@
     --main-bg: #fff;
     --main-font: var(--font-inter);
     --main-mono-font: var(--font-geist-mono);
+    --cell-size: 2rem;
   }
 
   .dark {
