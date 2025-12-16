@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ConditionalLayout } from "@/components/conditional-layout";
-import { Toaster } from "@/components/ui/sonner";
-import { Analytics } from "@vercel/analytics/react";
-import { GoogleAnalytics } from "@/components/google-analytics";
-import { PerformanceOptimizer } from "@/components/performance-optimizer";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { SearchProvider } from "@/contexts/search-context";
+import { ClientWrapper } from "@/components/client-wrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -135,17 +129,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
-        <ErrorBoundary>
-          <SearchProvider>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
-            <Toaster />
-            <Analytics />
-            <GoogleAnalytics />
-            <PerformanceOptimizer />
-          </SearchProvider>
-        </ErrorBoundary>
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   );

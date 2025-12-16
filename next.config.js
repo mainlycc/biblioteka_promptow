@@ -74,22 +74,32 @@ const nextConfig = {
   // Webpack optymalizacje
   webpack: (config, { dev, isServer }) => {
     // Wymuś użycie jednej wersji React dla wszystkich modułów
+    // To rozwiązuje problem z wieloma kopiami React w projekcie
+    const reactPath = require.resolve('react', { paths: [process.cwd()] });
+    const reactDomPath = require.resolve('react-dom', { paths: [process.cwd()] });
+    const jsxRuntimePath = require.resolve('react/jsx-runtime', { paths: [process.cwd()] });
+    const jsxDevRuntimePath = require.resolve('react/jsx-dev-runtime', { paths: [process.cwd()] });
+    
     config.resolve.alias = {
       ...config.resolve.alias,
-      react: require.resolve('react'),
-      'react-dom': require.resolve('react-dom'),
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+      react: reactPath,
+      'react-dom': reactDomPath,
+      'react/jsx-runtime': jsxRuntimePath,
+      'react/jsx-dev-runtime': jsxDevRuntimePath,
+      // Wymuś użycie jednej wersji React dla next-mdx-remote i jego zależności
+      '@mdx-js/react': require.resolve('@mdx-js/react', { paths: [process.cwd()] }),
     };
 
-    // Wymuś użycie jednej wersji React w zależnościach
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        react: require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
-      };
-    }
+    // Dodatkowo, upewnij się że next-mdx-remote używa tej samej wersji React
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+    };
+
+    // Upewnij się, że wszystkie moduły używają tej samej wersji React
+    config.resolve.extensionAlias = {
+      '.js': ['.js', '.ts', '.tsx'],
+      '.jsx': ['.jsx', '.tsx'],
+    };
 
     if (!dev && !isServer) {
       config.optimization.splitChunks.cacheGroups = {

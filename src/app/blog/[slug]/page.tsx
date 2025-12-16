@@ -9,8 +9,8 @@ import { BlogPostError } from "@/components/blog-error"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import { components } from '@/mdx-components'
+import { serialize } from 'next-mdx-remote/serialize'
+import { MDXContent } from '@/components/mdx-content'
 import { ScrollToTop } from '@/components/scroll-to-top'
 
 const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
@@ -132,6 +132,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const featuredImageUrl = resolveFeaturedImageUrl(post.featured_image)
 
+  // Zserializuj zawartość MDX w Server Component
+  const mdxSource = await serialize(post.content, {
+    mdxOptions: {
+      remarkPlugins: [],
+      rehypePlugins: [],
+    },
+  })
+
   return (
     <>
       <ArticleSchema article={{ ...post, image_url: featuredImageUrl || undefined }} />
@@ -209,7 +217,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Article Content */}
       <article className="blog-content">
-        <MDXRemote source={post.content} components={components} />
+        <MDXContent source={mdxSource} />
       </article>
 
       {/* Related Articles */}
