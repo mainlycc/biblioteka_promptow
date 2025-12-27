@@ -24,6 +24,25 @@ const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
   return `${supabaseUrl}/storage/v1/object/public/${normalizedPath}`
 }
 
+/**
+ * Dodaje timeout protection do operacji asynchronicznej
+ * @param promise Promise do wykonania
+ * @param timeoutMs Timeout w milisekundach (domyślnie 10 sekund)
+ * @returns Promise z timeout protection
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 10000
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Operacja przekroczyła limit czasu (${timeoutMs}ms)`))
+    }, timeoutMs)
+  })
+
+  return Promise.race([promise, timeoutPromise])
+}
+
 interface BlogPostPageProps {
   params: Promise<{
     slug: string
@@ -50,7 +69,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const post = await getBlogPostBySlug(slug)
+    // Pobierz post z timeout protection (10 sekund) dla generateMetadata
+    const post = await withTimeout(getBlogPostBySlug(slug), 10000)
     const featuredImageUrl = resolveFeaturedImageUrl(post?.featured_image)
     
     if (!post) {
@@ -86,9 +106,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       },
     }
   } catch (error) {
+    // Zawsze zwracaj poprawny obiekt Metadata, nawet w przypadku błędu
+    // To zapobiega błędom 5xx podczas generowania metadanych
+    console.error('Błąd podczas generowania metadanych:', error)
     return {
-      title: "Błąd - Biblioteka Promptów",
-      description: "Wystąpił błąd podczas ładowania artykułu.",
+      title: "Artykuł - Biblioteka Promptów",
+      description: "Przeczytaj artykuł na naszej stronie.",
     }
   }
 }
@@ -107,15 +130,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   })
 
   try {
-    post = await getBlogPostBySlug(slug)
+    // Pobierz post z timeout protection (15 sekund)
+    post = await withTimeout(getBlogPostBySlug(slug), 15000)
     
     if (!post) {
       console.log('❌ BlogPostPage - post nie znaleziony dla slug:', slug)
       notFound()
     }
 
-    // Pobierz powiązane posty
-    relatedPosts = await getRelatedBlogPosts(post.id, post.category, post.tags || [], 2)
+    // Pobierz powiązane posty - nie blokuj renderowania jeśli się nie powiedzie
+    // Używamy timeout 8 sekund - krótszy timeout, bo to dodatkowa funkcjonalność
+    try {
+      relatedPosts = await withTimeout(
+        getRelatedBlogPosts(post.id, post.category, post.tags || [], 2),
+        8000
+      )
+    } catch (relatedError) {
+      console.error('⚠️ Błąd podczas pobierania powiązanych postów (kontynuowanie bez nich):', relatedError)
+      // Nie ustawiamy error - kontynuujemy renderowanie bez powiązanych postów
+      relatedPosts = []
+    }
     
   } catch (err) {
     console.error('Błąd podczas pobierania posta bloga:', err)
@@ -132,13 +166,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const featuredImageUrl = resolveFeaturedImageUrl(post.featured_image)
 
-  // Zserializuj zawartość MDX w Server Component
-  const mdxSource = await serialize(post.content, {
-    mdxOptions: {
-      remarkPlugins: [],
-      rehypePlugins: [],
-    },
-  })
+  // Zserializuj zawartość MDX w Server Component z obsługą błędów i timeout
+  let mdxSource: any = null
+  let mdxError: Error | null = null
+  
+  try {
+    // Serializacja MDX z timeout protection (12 sekund)
+    mdxSource = await withTimeout(
+      serialize(post.content, {
+        mdxOptions: {
+          remarkPlugins: [],
+          rehypePlugins: [],
+        },
+      }),
+      12000
+    )
+  } catch (serializeErr: any) {
+    console.error('❌ Błąd podczas serializacji MDX:', serializeErr)
+    mdxError = serializeErr instanceof Error ? serializeErr : new Error(String(serializeErr))
+    // Nie rzucamy błędu - kontynuujemy z fallback
+  }
 
   return (
     <>
@@ -217,7 +264,20 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Article Content */}
       <article className="blog-content">
-        <MDXContent source={mdxSource} />
+        {mdxError ? (
+          // Fallback gdy serializacja MDX się nie powiedzie - wyświetl jako HTML/plain text
+          <div 
+            className="prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        ) : mdxSource ? (
+          <MDXContent source={mdxSource} />
+        ) : (
+          // Ostateczny fallback - plain text
+          <div className="prose prose-lg max-w-none whitespace-pre-wrap">
+            {post.content}
+          </div>
+        )}
       </article>
 
       {/* Related Articles */}
