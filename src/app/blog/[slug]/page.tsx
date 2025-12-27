@@ -55,15 +55,33 @@ interface BlogPostPageProps {
 export const revalidate = 3600 // Revalidacja co godzinę - strona będzie cache'owana przez godzinę
 
 // Generowanie statycznych ścieżek (SSG) dla postów z bazy danych
+// UWAGA: Jeśli podczas buildu nie ma dostępu do bazy lub są błędy, zwracamy pustą tablicę
+// Strony będą renderowane dynamicznie przy pierwszym żądaniu (on-demand ISR)
 export async function generateStaticParams() {
   try {
-    const slugs = await getAllPostSlugs();
+    // Timeout dla generateStaticParams podczas buildu (max 10 sekund)
+    const timeoutPromise = new Promise<string[]>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Timeout podczas pobierania slugów dla generateStaticParams'))
+      }, 10000)
+    })
+    
+    const slugsPromise = getAllPostSlugs()
+    const slugs = await Promise.race([slugsPromise, timeoutPromise])
+    
+    if (!Array.isArray(slugs) || slugs.length === 0) {
+      console.log('⚠️ Brak slugów do pre-renderowania, strony będą renderowane on-demand')
+      return []
+    }
+    
+    console.log(`✅ Wygenerowano ${slugs.length} statycznych ścieżek dla bloga`)
     return slugs.map((slug) => ({
       slug,
-    }));
+    }))
   } catch (error) {
-    console.error('Error generating static params:', error);
-    return [];
+    console.error('⚠️ Błąd podczas generowania statycznych parametrów (strony będą renderowane on-demand):', error)
+    // Zwracamy pustą tablicę - strony będą renderowane dynamicznie przy pierwszym żądaniu
+    return []
   }
 }
 
