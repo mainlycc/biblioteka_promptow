@@ -50,9 +50,9 @@ interface BlogPostPageProps {
 }
 
 // Używamy ISR (Incremental Static Regeneration) - revalidacja co godzinę
-// To pozwala na lepsze indeksowanie przez Google, podobnie jak w promptach
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalidacja co godzinę - takie samo jak w promptach
+// UWAGA: Usunięto dynamic = 'force-dynamic' bo konfliktuje z revalidate
+// force-dynamic wyłącza cache, więc revalidate jest ignorowany
+export const revalidate = 3600 // Revalidacja co godzinę - strona będzie cache'owana przez godzinę
 
 // Generowanie statycznych ścieżek (SSG) dla postów z bazy danych
 export async function generateStaticParams() {
