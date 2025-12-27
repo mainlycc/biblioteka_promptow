@@ -26,7 +26,7 @@ interface Prompt {
   created_at: string
 }
 
-const ITEMS_PER_PAGE = 16;
+const ITEMS_PER_PAGE = 15;
 
 export default function PromptyGraficznePage() {
   const [prompts, setPrompts] = useState<Prompt[]>([])

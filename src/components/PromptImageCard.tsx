@@ -126,7 +126,7 @@ export function PromptImageCard({ prompt }: PromptImageCardProps) {
       )}
 
       {/* Footer - Autor i przycisk kopiowania */}
-      <div className="flex flex-row items-center justify-between mt-auto px-4 py-1 border-t">
+      <div className="flex flex-row items-center justify-between mt-auto px-4 py-0.5 border-t">
         <div className="flex items-center gap-1">
           {prompt.author_profile_image ? (
             <img

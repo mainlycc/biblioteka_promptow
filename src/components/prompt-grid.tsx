@@ -175,13 +175,13 @@ export function PromptGrid() {
           <div key={prompt.id} className="block h-full">
             <Card className="flex flex-col border-[color:var(--main-orange)] h-full min-h-[280px] md:min-h-[300px]">
               <Link href={`/prompt/${prompt.id}`} className="block">
-                <div className="px-3 md:px-4 pt-2">
+                <div className="px-3 md:px-4 pt-1">
                   <h3 className="font-semibold text-sm md:text-base text-black text-center leading-tight">{prompt.title_pl}</h3>
                 </div>
                 
                 {/* Zdjęcia dla promptów graficznych */}
                 {prompt.type === 'image' && prompt.images && prompt.images.length > 0 && (
-                  <div className="flex flex-1 items-center justify-center px-4 pt-2">
+                  <div className="flex flex-1 items-center justify-center px-4 pt-1">
                     <div className="grid w-full aspect-square gap-2" style={{
                       gridTemplateColumns: prompt.images?.length === 1 ? '1fr' : '1fr 1fr',
                       gridTemplateRows: prompt.images?.length === 1 ? '1fr' : prompt.images?.length && prompt.images.length <= 2 ? '1fr' : '1fr 1fr'
@@ -205,7 +205,7 @@ export function PromptGrid() {
                   </div>
                 )}
                 
-                <CardContent className="flex flex-col flex-1 gap-2 pt-2 px-3 md:px-4 pb-0">
+                <CardContent className="flex flex-col flex-1 gap-2 pt-1 px-3 md:px-4 pb-0">
                   <div className="text-xs md:text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-hidden line-clamp-4 md:line-clamp-6">{prompt.description}</div>
                   <div className="flex flex-wrap gap-1">
                     {prompt.tags.map((tag, i) => (
@@ -214,7 +214,7 @@ export function PromptGrid() {
                   </div>
                 </CardContent>
               </Link>
-              <div className="flex justify-between items-center mt-auto px-3 md:px-4 py-2 border-t">
+              <div className="flex justify-between items-center mt-auto px-3 md:px-4 py-1 border-t">
                 <div className="flex items-center gap-1">
                   {prompt.author_profile_image ? (
                     <img

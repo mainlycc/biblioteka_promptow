@@ -35,7 +35,7 @@ interface Prompt {
 }
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 // Funkcja pomocnicza do pobierania promptu
@@ -61,7 +61,8 @@ async function getPrompt(id: string): Promise<Prompt | null> {
 
 // Generowanie metadanych dla SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const prompt = await getPrompt(params.id)
+  const { id } = await params
+  const prompt = await getPrompt(id)
   
   if (!prompt) {
     return {
@@ -128,7 +129,8 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Rewalidacja co godzinę
 
 export default async function Page({ params }: Props) {
-  const prompt = await getPrompt(params.id)
+  const { id } = await params
+  const prompt = await getPrompt(id)
 
   if (!prompt) {
     notFound()

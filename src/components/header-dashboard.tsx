@@ -7,11 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { useSearch } from "@/contexts/search-context";
+import { cn } from "@/lib/utils";
+import { FileText, Image as ImageIcon } from "lucide-react";
 
 export function Header() {
   const { searchQuery, setSearchQuery } = useSearch();
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/"
+    }
+    return pathname === href || pathname.startsWith(href + "/")
+  }
 
   return (
     <header className="flex items-center justify-between bg-white border-b px-4 md:px-6 lg:px-8 py-2 md:py-3 gap-2 md:gap-4">
@@ -30,6 +39,34 @@ export function Header() {
           />
           <span className="sr-only">Biblioteka Promptów</span>
         </Link>
+        
+        {/* Navigation links - Desktop only */}
+        <nav className="hidden md:flex items-center gap-2 ml-4">
+          <Link
+            href="/prompty"
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+              isActive("/prompty") 
+                ? "bg-orange-100 text-orange-700 shadow-sm" 
+                : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+            )}
+          >
+            <FileText className="h-4 w-4" />
+            <span>Prompty tekstowe</span>
+          </Link>
+          <Link
+            href="/prompts-graficzne"
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+              isActive("/prompts-graficzne") 
+                ? "bg-orange-100 text-orange-700 shadow-sm" 
+                : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+            )}
+          >
+            <ImageIcon className="h-4 w-4" />
+            <span>Prompty graficzne</span>
+          </Link>
+        </nav>
       </div>
       
       {/* Center section - Search (ukryte na stronie głównej) */}
@@ -46,7 +83,7 @@ export function Header() {
       
       {/* Right section - Newsletter button */}
       <div className="flex items-center flex-shrink-0">
-        <Button asChild variant="outline" className="hidden lg:flex whitespace-nowrap">
+        <Button asChild className="hidden lg:flex whitespace-nowrap bg-orange-500 hover:bg-orange-600 text-white border-orange-500">
           <Link href="/newsletter">Dołącz do nas</Link>
         </Button>
       </div>
