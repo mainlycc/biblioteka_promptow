@@ -85,6 +85,17 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       title: post.meta_title || post.title,
       description: post.meta_description || post.excerpt || "",
       keywords: post.tags,
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
       openGraph: {
         title: post.meta_title || post.title,
         description: post.meta_description || post.excerpt || "",
@@ -103,7 +114,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         card: "summary_large_image",
       },
       alternates: {
-        canonical: `/blog/${post.slug}`,
+        canonical: `https://bibliotekapromptow.pl/blog/${post.slug}`,
       },
     }
   } catch (error) {
@@ -113,6 +124,10 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     return {
       title: "Artykuł - Biblioteka Promptów",
       description: "Przeczytaj artykuł na naszej stronie.",
+      robots: {
+        index: true,
+        follow: true,
+      },
     }
   }
 }
