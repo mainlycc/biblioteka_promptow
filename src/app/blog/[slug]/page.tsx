@@ -131,7 +131,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   try {
     // Pobierz post z timeout protection (15 sekund)
-    post = await withTimeout(getBlogPostBySlug(slug), 15000)
+    try {
+      post = await withTimeout(getBlogPostBySlug(slug), 15000)
+    } catch (fetchError) {
+      // Jeśli błąd podczas pobierania, loguj ale nie rzucaj błędu dalej
+      console.error('⚠️ Błąd podczas pobierania posta (może być problem z bazą):', fetchError)
+      post = null
+    }
     
     if (!post) {
       console.log('❌ BlogPostPage - post nie znaleziony dla slug:', slug)
@@ -187,14 +193,29 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     // Nie rzucamy błędu - kontynuujemy z fallback
   }
 
+  // Przygotuj bezpieczne dane dla schematów JSON-LD
+  const safeArticleData = {
+    title: post.title || "Artykuł",
+    excerpt: post.excerpt || "",
+    slug: post.slug || "",
+    author: post.author || "Autor",
+    published_at: post.published_at || new Date().toISOString(),
+    updated_at: post.updated_at || post.published_at || new Date().toISOString(),
+    category: post.category || "",
+    tags: Array.isArray(post.tags) ? post.tags : [],
+    content: post.content || "",
+    read_time: post.read_time || 1,
+    image_url: featuredImageUrl || undefined
+  }
+
   return (
     <>
-      <ArticleSchema article={{ ...post, image_url: featuredImageUrl || undefined }} />
+      {safeArticleData.slug && <ArticleSchema article={safeArticleData} />}
       <BreadcrumbSchema 
         items={[
           { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
           { name: "Blog", url: "https://bibliotekapromptow.pl/blog" },
-          { name: post.title, url: `https://bibliotekapromptow.pl/blog/${post.slug}` }
+          { name: safeArticleData.title, url: `https://bibliotekapromptow.pl/blog/${safeArticleData.slug}` }
         ]} 
       />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -224,12 +245,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <span className="text-sm text-muted-foreground">•</span>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>{new Date(post.published_at).toLocaleDateString('pl-PL')}</span>
+            <span>
+              {post.published_at 
+                ? new Date(post.published_at).toLocaleDateString('pl-PL')
+                : 'Brak daty'}
+            </span>
           </div>
           <span className="text-sm text-muted-foreground">•</span>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
-            <span>{post.read_time} min czytania</span>
+            <span>{post.read_time || 1} min czytania</span>
           </div>
         </div>
         

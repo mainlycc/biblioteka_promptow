@@ -135,43 +135,57 @@ interface ArticleSchemaProps {
 }
 
 export function ArticleSchema({ article }: ArticleSchemaProps) {
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": article.title,
-    "description": article.excerpt,
-    "image": article.image_url || "https://bibliotekapromptow.pl/logo.png",
-    "datePublished": article.published_at,
-    "dateModified": article.updated_at,
-    "author": {
-      "@type": "Person",
-      "name": article.author
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Biblioteka Promptów",
-      "url": "https://bibliotekapromptow.pl",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://bibliotekapromptow.pl/logo.png"
-      }
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://bibliotekapromptow.pl/blog/${article.slug}`
-    },
-    "articleSection": article.category,
-    "keywords": article.tags.join(", "),
-    "wordCount": article.content.split(/\s+/).length,
-    "timeRequired": `PT${article.read_time}M`,
-    "inLanguage": "pl-PL"
-  }
+  try {
+    // Bezpieczne przetwarzanie danych z wartościami domyślnymi
+    const safeTags = Array.isArray(article.tags) && article.tags.length > 0 
+      ? article.tags.join(", ") 
+      : ""
+    
+    const safeContent = article.content || ""
+    const wordCount = safeContent.split(/\s+/).filter(word => word.length > 0).length
 
-  return (
-    <Script
-      id={`article-schema-${article.slug}`}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  )
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": article.title || "Artykuł",
+      "description": article.excerpt || "",
+      "image": article.image_url || "https://bibliotekapromptow.pl/logo.png",
+      "datePublished": article.published_at || new Date().toISOString(),
+      "dateModified": article.updated_at || article.published_at || new Date().toISOString(),
+      "author": {
+        "@type": "Person",
+        "name": article.author || "Autor"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Biblioteka Promptów",
+        "url": "https://bibliotekapromptow.pl",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bibliotekapromptow.pl/logo.png"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://bibliotekapromptow.pl/blog/${article.slug || ""}`
+      },
+      "articleSection": article.category || "",
+      "keywords": safeTags,
+      "wordCount": wordCount,
+      "timeRequired": `PT${article.read_time || 1}M`,
+      "inLanguage": "pl-PL"
+    }
+
+    return (
+      <Script
+        id={`article-schema-${article.slug || "unknown"}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+    )
+  } catch (error) {
+    // W przypadku błędu, zwróć minimalny schema lub nic nie renderuj
+    console.error('Błąd podczas generowania ArticleSchema:', error)
+    return null
+  }
 } 
