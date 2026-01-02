@@ -9,9 +9,10 @@ import { BlogPostError } from "@/components/blog-error"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXContent } from '@/components/mdx-content'
+import { MDXRemote } from 'next-mdx-remote/rsc'
 import { ScrollToTop } from '@/components/scroll-to-top'
+import { components } from '@/mdx-components'
+import { truncateTitle, formatMetaDescription, isValidImageUrl } from "@/lib/metadata-utils"
 
 const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
   if (!featuredImage) return null
@@ -99,9 +100,22 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       }
     }
 
+    // Walidacja i formatowanie tytułu (max 60 znaków)
+    const rawTitle = post.meta_title || post.title || ""
+    const title = truncateTitle(rawTitle)
+    
+    // Walidacja i formatowanie meta description (120-160 znaków)
+    const rawDescription = post.meta_description || post.excerpt || ""
+    const description = formatMetaDescription(rawDescription)
+
+    // Walidacja obrazu - sprawdzamy czy URL jest prawidłowy
+    const validImageUrl = featuredImageUrl && isValidImageUrl(featuredImageUrl) 
+      ? featuredImageUrl 
+      : undefined
+
     return {
-      title: post.meta_title || post.title,
-      description: post.meta_description || post.excerpt || "",
+      title,
+      description,
       keywords: post.tags,
       robots: {
         index: true,
@@ -115,20 +129,20 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
         },
       },
       openGraph: {
-        title: post.meta_title || post.title,
-        description: post.meta_description || post.excerpt || "",
+        title,
+        description,
         url: `https://bibliotekapromptow.pl/blog/${post.slug}`,
         type: "article",
-        images: featuredImageUrl ? [featuredImageUrl] : undefined,
+        images: validImageUrl ? [validImageUrl] : undefined,
         publishedTime: post.published_at,
         modifiedTime: post.updated_at,
         authors: [post.author],
         tags: post.tags,
       },
       twitter: {
-        title: post.meta_title || post.title,
-        description: post.meta_description || post.excerpt || "",
-        images: featuredImageUrl ? [featuredImageUrl] : undefined,
+        title,
+        description,
+        images: validImageUrl ? [validImageUrl] : undefined,
         card: "summary_large_image",
       },
       alternates: {
@@ -206,26 +220,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const featuredImageUrl = resolveFeaturedImageUrl(post.featured_image)
 
-  // Zserializuj zawartość MDX w Server Component z obsługą błędów i timeout
-  let mdxSource: any = null
-  let mdxError: Error | null = null
-  
-  try {
-    // Serializacja MDX z timeout protection (12 sekund)
-    mdxSource = await withTimeout(
-      serialize(post.content, {
-        mdxOptions: {
-          remarkPlugins: [],
-          rehypePlugins: [],
-        },
-      }),
-      12000
-    )
-  } catch (serializeErr: any) {
-    console.error('❌ Błąd podczas serializacji MDX:', serializeErr)
-    mdxError = serializeErr instanceof Error ? serializeErr : new Error(String(serializeErr))
-    // Nie rzucamy błędu - kontynuujemy z fallback
-  }
+  // Używamy MDXRemote z RSC (React Server Components) - działa podczas pre-renderowania
+  // Nie potrzebujemy serialize() bo MDXRemote/rsc robi to automatycznie
 
   // Przygotuj bezpieczne dane dla schematów JSON-LD
   const safeArticleData = {
@@ -323,20 +319,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Article Content */}
       <article className="blog-content">
-        {mdxError ? (
-          // Fallback gdy serializacja MDX się nie powiedzie - wyświetl jako HTML/plain text
-          <div 
-            className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+        <div className="prose prose-lg max-w-none">
+          <MDXRemote 
+            source={post.content} 
+            components={components}
           />
-        ) : mdxSource ? (
-          <MDXContent source={mdxSource} />
-        ) : (
-          // Ostateczny fallback - plain text
-          <div className="prose prose-lg max-w-none whitespace-pre-wrap">
-            {post.content}
-          </div>
-        )}
+        </div>
       </article>
 
       {/* Related Articles */}

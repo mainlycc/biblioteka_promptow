@@ -62,6 +62,9 @@ const nextConfig = {
   // Kompresja
   compress: true,
 
+  // Transpilacja pakietów zewnętrznych
+  transpilePackages: ['next-mdx-remote'],
+
   // Optymalizacja bundle
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],

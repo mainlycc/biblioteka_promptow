@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { isValidImageUrl, createImageAltText } from "@/lib/metadata-utils"
 
 // Funkcja do konwersji ścieżek Supabase Storage na pełne publiczne URL-e
 const resolveImageUrl = (imageUrl?: string | null) => {
@@ -95,32 +96,38 @@ export function PromptImageCard({ prompt }: PromptImageCardProps) {
       {prompt.type === 'image' && photos.length > 0 && (
         <div className="px-4 pt-1">
           <div className="grid w-full aspect-square gap-1 grid-cols-2 grid-rows-2">
-            {photos.map((photo, index) => {
-              const imageUrl = resolveImageUrl(photo)
-              if (!imageUrl) return null
-              
-              return (
-                <img
-                  key={photo}
-                  src={imageUrl}
-                  alt={displayTitle}
-                  className="w-full h-full object-cover object-center rounded-xl border shadow-sm"
-                  style={{
-                    gridColumn: photoCount === 1 ? '1 / -1' : 
-                               photoCount === 2 ? 'span 1' : 
-                               photoCount === 3 ? (index === 0 ? '1 / 2' : '2 / 3') :
-                               'span 1',
-                    gridRow: photoCount === 1 ? '1 / -1' : 
-                            photoCount === 2 ? '1 / -1' : 
-                            photoCount === 3 ? (index === 0 ? '1 / -1' : (index === 1 ? '1 / 2' : '2 / 3')) :
-                            index < 2 ? '1 / 2' : '2 / 3'
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
-                />
-              )
-            })}
+            {photos
+              .map((photo) => resolveImageUrl(photo))
+              .filter((imageUrl): imageUrl is string => {
+                // Filtrujemy tylko prawidłowe URL-e
+                return imageUrl !== null && isValidImageUrl(imageUrl)
+              })
+              .map((imageUrl, index) => {
+                const altText = createImageAltText(displayTitle, index)
+                
+                return (
+                  <img
+                    key={`${imageUrl}-${index}`}
+                    src={imageUrl}
+                    alt={altText}
+                    className="w-full h-full object-cover object-center rounded-xl border shadow-sm"
+                    style={{
+                      gridColumn: photoCount === 1 ? '1 / -1' : 
+                                 photoCount === 2 ? 'span 1' : 
+                                 photoCount === 3 ? (index === 0 ? '1 / 2' : '2 / 3') :
+                                 'span 1',
+                      gridRow: photoCount === 1 ? '1 / -1' : 
+                              photoCount === 2 ? '1 / -1' : 
+                              photoCount === 3 ? (index === 0 ? '1 / -1' : (index === 1 ? '1 / 2' : '2 / 3')) :
+                              index < 2 ? '1 / 2' : '2 / 3'
+                    }}
+                    onError={(e) => {
+                      // Ukryj zepsuty obraz
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )
+              })}
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Copy, Share2, Check, Calendar, User, Tag, Code, Image as ImageIcon } from "lucide-react"
+import { isValidImageUrl, createImageAltText } from "@/lib/metadata-utils"
 
 interface PromptPreviewProps {
   promptData: {
@@ -150,21 +151,29 @@ export function PromptPreview({ promptData }: PromptPreviewProps) {
                gridTemplateColumns: promptData.images?.length === 1 ? '1fr' : '1fr 1fr',
                gridTemplateRows: promptData.images?.length === 1 ? '1fr' : promptData.images?.length && promptData.images.length <= 2 ? '1fr' : '1fr 1fr'
              }}>
-               {promptData.images.map((imageUrl, index) => (
-                 <img
-                   key={index}
-                   src={imageUrl}
-                   alt={`Zdjęcie ${index + 1}`}
-                   className="w-full h-full object-cover rounded-xl border shadow-sm"
-                   style={{
-                     gridColumn: promptData.images?.length === 1 ? '1 / -1' : 'span 1',
-                     gridRow: promptData.images?.length === 1 ? '1 / -1' : promptData.images?.length && promptData.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
-                   }}
-                   onError={(e) => {
-                     e.currentTarget.style.display = 'none'
-                   }}
-                 />
-               ))}
+               {promptData.images
+                 .filter((imageUrl) => isValidImageUrl(imageUrl))
+                 .map((imageUrl, index) => {
+                   const displayTitle = promptData.title_pl || promptData.title || "Prompt"
+                   const altText = createImageAltText(displayTitle, index)
+                   
+                   return (
+                     <img
+                       key={index}
+                       src={imageUrl}
+                       alt={altText}
+                       className="w-full h-full object-cover rounded-xl border shadow-sm"
+                       style={{
+                         gridColumn: promptData.images?.length === 1 ? '1 / -1' : 'span 1',
+                         gridRow: promptData.images?.length === 1 ? '1 / -1' : promptData.images?.length && promptData.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
+                       }}
+                       onError={(e) => {
+                         // Ukryj zepsuty obraz
+                         e.currentTarget.style.display = 'none'
+                       }}
+                     />
+                   )
+                 })}
              </div>
            </div>
          </div>

@@ -186,21 +186,43 @@ export function PromptGrid() {
                       gridTemplateColumns: prompt.images?.length === 1 ? '1fr' : '1fr 1fr',
                       gridTemplateRows: prompt.images?.length === 1 ? '1fr' : prompt.images?.length && prompt.images.length <= 2 ? '1fr' : '1fr 1fr'
                     }}>
-                      {prompt.images.map((imageUrl, index) => (
-                        <img
-                          key={index}
-                          src={imageUrl}
-                          alt={`Zdjęcie ${index + 1}`}
-                          className="w-full h-full object-cover rounded-xl border shadow-sm"
-                          style={{
-                            gridColumn: prompt.images?.length === 1 ? '1 / -1' : 'span 1',
-                            gridRow: prompt.images?.length === 1 ? '1 / -1' : prompt.images?.length && prompt.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      ))}
+                      {prompt.images
+                        .filter((imageUrl) => {
+                          // Filtrujemy tylko prawidłowe URL-e przed renderowaniem
+                          try {
+                            if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                              new URL(imageUrl)
+                              return true
+                            }
+                            if (imageUrl.startsWith('/')) {
+                              return true
+                            }
+                            return false
+                          } catch {
+                            return false
+                          }
+                        })
+                        .map((imageUrl, index) => {
+                          const displayTitle = prompt.title_pl || prompt.title || "Prompt"
+                          const altText = `${displayTitle} - przykład ${index + 1}`
+                          
+                          return (
+                            <img
+                              key={index}
+                              src={imageUrl}
+                              alt={altText}
+                              className="w-full h-full object-cover rounded-xl border shadow-sm"
+                              style={{
+                                gridColumn: prompt.images?.length === 1 ? '1 / -1' : 'span 1',
+                                gridRow: prompt.images?.length === 1 ? '1 / -1' : prompt.images?.length && prompt.images.length <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
+                              }}
+                              onError={(e) => {
+                                // Ukryj zepsuty obraz
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          )
+                        })}
                     </div>
                   </div>
                 )}
