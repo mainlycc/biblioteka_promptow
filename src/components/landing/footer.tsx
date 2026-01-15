@@ -12,8 +12,8 @@ export function Footer() {
               <span className="text-lg font-bold text-foreground">Biblioteka Promptów</span>
             </Link>
             <p className="text-muted-foreground max-w-sm">
-              Twoje centrum gotowych promptów do AI. Twórz lepsze treści, oszczędzaj czas i wykorzystaj pełny potencjał
-              sztucznej inteligencji.
+              Centrum gotowych promptów do AI. Twórz lepsze treści i oszczędzaj czas. 
+              Dowiedz się więcej o <a href="https://openai.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OpenAI</a> i <a href="https://www.promptingguide.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">prompt engineering</a>.
             </p>
           </div>
 

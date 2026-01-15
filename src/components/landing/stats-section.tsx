@@ -14,7 +14,7 @@ export function StatsSection() {
             Twórz z <span className="text-primary">AI</span> bez ograniczeń
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Nasza biblioteka pomoże Ci w pełni wykorzystać potencjał sztucznej inteligencji w codziennej pracy.
+            Wykorzystaj AI w swojej pracy. Oszczędzaj czas i twórz lepsze treści.
           </p>
         </div>
 

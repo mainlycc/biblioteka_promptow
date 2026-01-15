@@ -7,10 +7,11 @@ import { BentoSection } from "@/components/landing/bento-section"
 import { TestimonialsSection } from "@/components/landing/testimonials-section"
 import { CTASection } from "@/components/landing/cta-section"
 import Footer from "@/components/footer-dashboard"
+import { WebsiteSchema, OrganizationSchema } from "@/components/json-ld-schema"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Biblioteka Promptów - Najlepsze Prompty dla ChatGPT, Claude i Gemini",
+  title: "Biblioteka Promptów - Prompty AI, ChatGPT, Claude",
   description: "Darmowa biblioteka najlepszych promptów dla AI. Gotowe szablony promptów dla ChatGPT, Claude, Gemini. Zwiększ efektywność pracy z AI!",
   keywords: [
     "biblioteka promptów",
@@ -26,10 +27,18 @@ export const metadata: Metadata = {
     "ai prompts",
   ],
   openGraph: {
-    title: "Biblioteka Promptów - Najlepsze Prompty dla AI",
+    title: "Biblioteka Promptów - Prompty AI, ChatGPT, Claude",
     description: "Darmowa biblioteka najlepszych promptów dla ChatGPT, Claude i Gemini. Gotowe szablony zwiększające efektywność pracy z AI.",
     url: "https://bibliotekapromptow.pl",
     type: "website",
+    images: [
+      {
+        url: "https://bibliotekapromptow.pl/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Biblioteka Promptów - Logo",
+      },
+    ],
   },
   alternates: {
     canonical: "/",
@@ -38,18 +47,22 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <HeroSection />
-        <TrustedBy />
-        <StatsSection />
-        <FeaturesSection />
-        <BentoSection />
-        <TestimonialsSection />
-        <CTASection />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <WebsiteSchema />
+      <OrganizationSchema />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main>
+          <HeroSection />
+          <TrustedBy />
+          <StatsSection />
+          <FeaturesSection />
+          <BentoSection />
+          <TestimonialsSection />
+          <CTASection />
+        </main>
+        <Footer />
+      </div>
+    </>
   )
 }

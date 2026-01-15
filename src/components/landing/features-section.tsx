@@ -42,7 +42,7 @@ export function FeaturesSection() {
             Funkcje, które <span className="text-primary">pokochasz</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Biblioteka Promptów to wszystko, czego potrzebujesz, aby tworzyć świetne treści z AI.
+            Wszystko czego potrzebujesz, aby tworzyć świetne treści z AI.
           </p>
         </div>
 

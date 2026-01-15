@@ -80,8 +80,8 @@ Temat: [TEMAT]`,
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-6 text-balance">
-            Twórz lepsze treści, oszczędzaj czas i wykorzystaj pełny potencjał sztucznej inteligencji. Gotowe prompty do
-            ChatGPT, Midjourney, DALL·E i wielu innych.
+            Twórz lepsze treści i oszczędzaj czas. Gotowe prompty do ChatGPT, Midjourney, DALL·E i innych. 
+            Dowiedz się więcej o <a href="https://openai.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">ChatGPT</a> i <a href="https://anthropic.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Claude AI</a>.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
