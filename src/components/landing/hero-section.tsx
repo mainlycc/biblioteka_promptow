@@ -75,8 +75,8 @@ Temat: [TEMAT]`,
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">
-            Odkryj moc <span className="text-primary">AI</span> z gotowymi{" "}
-            <span className="text-primary">promptami</span>
+            Biblioteka <span className="text-foreground">Promptów</span> AI - Gotowe szablony dla{" "}
+            <span className="text-primary">ChatGPT i Claude</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-6 text-balance">

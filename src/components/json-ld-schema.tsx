@@ -188,4 +188,39 @@ export function ArticleSchema({ article }: ArticleSchemaProps) {
     console.error('Błąd podczas generowania ArticleSchema:', error)
     return null
   }
+}
+
+interface FAQSchemaProps {
+  faqs: Array<{
+    question: string
+    answer: string
+  }>
+}
+
+export function FAQPageSchema({ faqs }: FAQSchemaProps) {
+  try {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map((faq) => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    }
+
+    return (
+      <Script
+        id="faq-page-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+    )
+  } catch (error) {
+    console.error('Błąd podczas generowania FAQPageSchema:', error)
+    return null
+  }
 } 

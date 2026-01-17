@@ -4,15 +4,17 @@ import { TrustedBy } from "@/components/landing/trusted-by"
 import { StatsSection } from "@/components/landing/stats-section"
 import { FeaturesSection } from "@/components/landing/features-section"
 import { BentoSection } from "@/components/landing/bento-section"
+import { HowItWorksSection } from "@/components/landing/how-it-works-section"
 import { TestimonialsSection } from "@/components/landing/testimonials-section"
+import { FAQSection, FAQ_DATA } from "@/components/landing/faq-section"
 import { CTASection } from "@/components/landing/cta-section"
 import Footer from "@/components/footer-dashboard"
-import { WebsiteSchema, OrganizationSchema } from "@/components/json-ld-schema"
+import { WebsiteSchema, OrganizationSchema, FAQPageSchema } from "@/components/json-ld-schema"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Biblioteka Promptów - Prompty AI, ChatGPT, Claude",
-  description: "Darmowa biblioteka najlepszych promptów dla AI. Gotowe szablony promptów dla ChatGPT, Claude, Gemini. Zwiększ efektywność pracy z AI!",
+  description: "Darmowa biblioteka 1000+ najlepszych promptów AI. Gotowe szablony dla ChatGPT, Claude, Gemini i Midjourney. Oszczędź 50% czasu i twórz lepsze treści!",
   keywords: [
     "biblioteka promptów",
     "prompty chatgpt",
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Biblioteka Promptów - Prompty AI, ChatGPT, Claude",
-    description: "Darmowa biblioteka najlepszych promptów dla ChatGPT, Claude i Gemini. Gotowe szablony zwiększające efektywność pracy z AI.",
+    description: "Darmowa biblioteka 1000+ najlepszych promptów AI. Gotowe szablony dla ChatGPT, Claude, Gemini i Midjourney. Oszczędź 50% czasu i twórz lepsze treści!",
     url: "https://bibliotekapromptow.pl",
     type: "website",
     images: [
@@ -50,7 +52,9 @@ export default function Home() {
     <>
       <WebsiteSchema />
       <OrganizationSchema />
-      <div className="min-h-screen bg-background">
+      <FAQPageSchema faqs={FAQ_DATA} />
+      <div className="min-h-screen relative">
+        <div className="fixed inset-0 -z-10 h-full w-full bg-white" style={{ background: 'radial-gradient(125% 125% at 50% 10%, #fff 40%, #ff8000 100%)' }}></div>
         <Header />
         <main>
           <HeroSection />
@@ -58,7 +62,9 @@ export default function Home() {
           <StatsSection />
           <FeaturesSection />
           <BentoSection />
+          <HowItWorksSection />
           <TestimonialsSection />
+          <FAQSection />
           <CTASection />
         </main>
         <Footer />
