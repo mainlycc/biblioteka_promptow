@@ -37,7 +37,7 @@ export function HowItWorksSection() {
 
         <div className="max-w-4xl mx-auto">
           <ol className="space-y-8 md:space-y-12">
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <li
                 key={step.number}
                 className="flex flex-col md:flex-row gap-6 items-start"
