@@ -59,6 +59,11 @@ const nextConfig = {
     ];
   },
 
+  // Wyłącz ESLint podczas buildu (lint osobno przez `pnpm lint`)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Kompresja
   compress: true,
 
