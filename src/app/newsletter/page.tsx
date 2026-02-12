@@ -6,24 +6,41 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { ArrowLeft, Mail, Check, Bell, Clock, Star, Zap, Shield, Users, TrendingUp } from "lucide-react"
+import { ArrowLeft, Mail, Check, Bell, Clock, Star, Zap, Shield, Users, TrendingUp, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
-    // Symulacja zapisania do newslettera
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    setEmail("")
+    setError(null)
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Wystąpił błąd. Spróbuj ponownie.")
+        return
+      }
+
+      setIsSubmitted(true)
+      setEmail("")
+    } catch {
+      setError("Nie udało się połączyć z serwerem. Sprawdź połączenie internetowe.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -108,7 +125,7 @@ export default function NewsletterPage() {
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-1">Nowości ze świata AI</h4>
                     <p className="text-sm text-gray-600">Najnowsze informacje o narzędziach i trendach</p>
-        </div>
+                  </div>
                 </div>
                 
                 <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
@@ -175,8 +192,11 @@ export default function NewsletterPage() {
                     <p className="text-gray-600 text-lg mb-4">
                       Dziękujemy za zapisanie się do newslettera!
                     </p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      Sprawdź swoją skrzynkę email — wysłaliśmy Ci wiadomość powitalną.
+                    </p>
                     <p className="text-sm text-gray-500">
-                      Pierwszy email otrzymasz już w przyszłym tygodniu.
+                      Pierwszy newsletter otrzymasz już w przyszłym tygodniu.
                     </p>
                   </div>
                 ) : (
@@ -191,11 +211,21 @@ export default function NewsletterPage() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (error) setError(null)
+                  }}
                   placeholder="twoj@email.com"
                         className="h-12 border-orange-200 focus:border-orange-500 focus:ring-orange-500 text-base"
                 />
               </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
               
               <Button 
                 type="submit" 
@@ -228,4 +258,4 @@ export default function NewsletterPage() {
       </div>
     </div>
   )
-} 
+}
