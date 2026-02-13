@@ -55,8 +55,23 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Biblioteka Promptów. Wszelkie prawa zastrzeżone.
+        <div className="border-t border-border pt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+            <div className="text-center sm:text-left">
+              © {new Date().getFullYear()} Biblioteka Promptów. Wszelkie prawa zastrzeżone.
+            </div>
+            <div className="text-center sm:text-right">
+              Made by{" "}
+              <Link 
+                href="https://www.mainly.pl" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                mainly
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

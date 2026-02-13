@@ -29,10 +29,22 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
             <Link href="/contact" className="hover:text-[#d03801] transition-colors">
               Kontakt
             </Link>
+            <span className="text-[#d03801]/50">|</span>
+            <span>
+              Made by{" "}
+              <Link 
+                href="https://www.mainly.pl" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-[#d03801] transition-colors font-medium"
+              >
+                mainly
+              </Link>
+            </span>
           </div>
         </div>
       </div>
