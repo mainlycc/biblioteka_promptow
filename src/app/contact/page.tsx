@@ -25,13 +25,30 @@ export default function ContactPage() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Symulacja wysłania formularza
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    setFormData({ name: "", email: "", subject: "", message: "" })
-    trackContactForm()
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Wystąpił błąd podczas wysyłania wiadomości')
+      }
+
+      setIsSubmitted(true)
+      setFormData({ name: "", email: "", subject: "", message: "" })
+      trackContactForm()
+    } catch (error) {
+      console.error('Błąd wysyłania formularza:', error)
+      alert(error instanceof Error ? error.message : 'Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
