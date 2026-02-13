@@ -1,3 +1,14 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Prompty Filmowe - Biblioteka Promptów",
+  description: "Prompty do generowania filmów za pomocą AI.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
 export default function FilmowePromptyPage() {
   return (
     <main className="flex-1 p-8 pt-4">

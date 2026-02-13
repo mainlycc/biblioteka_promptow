@@ -1,17 +1,39 @@
-"use client"
-
-import { useState, useEffect, useMemo } from "react"
-import { PromptImageCard } from "@/components/PromptImageCard"
+import { PromptsGraficzneClient } from "@/components/prompts-graficzne-client"
+import { OrganizationSchema, WebsiteSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
+import type { Metadata } from "next"
 import { supabase } from "@/lib/supabase"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+
+export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: "Prompty Graficzne - Biblioteka Promptów",
+  description: "Najlepsze prompty graficzne dla AI. Gotowe szablony promptów do generowania obrazów w Midjourney, DALL-E, Stable Diffusion i innych narzędziach AI.",
+  keywords: [
+    "prompty graficzne",
+    "prompty midjourney",
+    "prompty dall-e",
+    "prompty stable diffusion",
+    "prompty do generowania obrazów",
+    "ai art prompts",
+    "prompty graficzne ai",
+    "szablony promptów graficznych",
+    "prompt engineering obrazów",
+    "najlepsze prompty graficzne",
+  ],
+  openGraph: {
+    title: "Prompty Graficzne - Biblioteka Promptów",
+    description: "Najlepsze prompty graficzne dla AI. Gotowe szablony promptów do generowania obrazów w Midjourney, DALL-E, Stable Diffusion.",
+    url: "https://bibliotekapromptow.pl/prompts-graficzne",
+    type: "website",
+  },
+  twitter: {
+    title: "Prompty Graficzne - Biblioteka Promptów",
+    description: "Najlepsze prompty graficzne dla AI. Gotowe szablony promptów do generowania obrazów w Midjourney, DALL-E, Stable Diffusion.",
+  },
+  alternates: {
+    canonical: "/prompts-graficzne",
+  },
+}
 
 interface Prompt {
   id: string
@@ -26,173 +48,52 @@ interface Prompt {
   created_at: string
 }
 
-const ITEMS_PER_PAGE = 18;
+async function getImagePrompts(): Promise<Prompt[]> {
+  try {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .eq('type', 'image')
+      .order('created_at', { ascending: false })
 
-export default function PromptyGraficznePage() {
-  const [prompts, setPrompts] = useState<Prompt[]>([])
-  const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-
-  useEffect(() => {
-    fetchImagePrompts()
-  }, [])
-
-  const fetchImagePrompts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('type', 'image')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setPrompts(data || [])
-    } catch (error) {
+    if (error) {
       console.error('Błąd podczas pobierania promptów graficznych:', error)
-    } finally {
-      setLoading(false)
+      return []
     }
+
+    return (data || []) as Prompt[]
+  } catch (error) {
+    console.error('Błąd podczas pobierania promptów graficznych:', error)
+    return []
   }
+}
 
-  // Obliczanie paginacji
-  const totalPages = Math.ceil(prompts.length / ITEMS_PER_PAGE);
-  
-  // Pobierz prompty dla aktualnej strony
-  const paginatedPrompts = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return prompts.slice(startIndex, endIndex);
-  }, [prompts, currentPage]);
-
-  // Generowanie numerów stron do wyświetlenia
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      // Jeśli jest mało stron, pokaż wszystkie
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Zawsze pokazuj pierwszą stronę
-      pages.push(1);
-
-      if (currentPage > 3) {
-        pages.push('ellipsis');
-      }
-
-      // Pokaż strony wokół aktualnej
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        if (i !== 1 && i !== totalPages) {
-          pages.push(i);
-        }
-      }
-
-      if (currentPage < totalPages - 2) {
-        pages.push('ellipsis');
-      }
-
-      // Zawsze pokazuj ostatnią stronę
-      if (totalPages > 1) {
-        pages.push(totalPages);
-      }
-    }
-
-    return pages;
-  };
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  if (loading) {
-    return (
-      <main className="flex-1 p-8 pt-4">
-        <h1 className="text-2xl font-bold mb-4">Prompty graficzne</h1>
-        <div>Ładowanie...</div>
-      </main>
-    )
-  }
+export default async function PromptyGraficznePage() {
+  const prompts = await getImagePrompts()
 
   return (
-    <main className="flex-1 p-8 pt-4">
-      <h1 className="text-2xl font-bold mb-4">Prompty graficzne</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-        {paginatedPrompts.map((prompt) => (
-          <PromptImageCard key={prompt.id} prompt={prompt} />
-        ))}
-      </div>
-      
-      {totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) {
-                      handlePageChange(currentPage - 1);
-                    }
-                  }}
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                  aria-label="Poprzednia strona"
-                />
-              </PaginationItem>
-              
-              {getPageNumbers().map((page, index) => (
-                <PaginationItem key={index}>
-                  {page === 'ellipsis' ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(page as number);
-                      }}
-                      isActive={currentPage === page}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) {
-                      handlePageChange(currentPage + 1);
-                    }
-                  }}
-                  className={
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                  aria-label="Następna strona"
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+    <>
+      <OrganizationSchema />
+      <WebsiteSchema />
+      <BreadcrumbSchema 
+        items={[
+          { name: "Strona główna", url: "https://bibliotekapromptow.pl" },
+          { name: "Prompty Graficzne", url: "https://bibliotekapromptow.pl/prompts-graficzne" }
+        ]} 
+      />
+      <main className="flex-1 p-4 md:p-8 pt-4">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-black">
+            Prompty Graficzne dla AI
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-3xl">
+            Odkryj najlepsze prompty graficzne do generowania obrazów za pomocą AI. 
+            Gotowe szablony promptów dla Midjourney, DALL-E, Stable Diffusion i innych narzędzi do tworzenia sztuki AI. 
+            Znajdź inspirację i twórz niesamowite obrazy z pomocą sztucznej inteligencji.
+          </p>
         </div>
-      )}
-    </main>
+        <PromptsGraficzneClient prompts={prompts} />
+      </main>
+    </>
   )
 } 

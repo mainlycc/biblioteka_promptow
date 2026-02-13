@@ -124,9 +124,9 @@ export default async function BlogPage() {
 
       {/* Header */}
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-4 text-black">Blog</h1>
+        <h1 className="text-3xl font-bold mb-4 text-black">Blog o AI i Prompt Engineering</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji.
+          Porady, poradniki i najlepsze praktyki w dziedzinie prompt engineering, ChatGPT, Claude i sztucznej inteligencji. Dowiedz się, jak pisać skuteczne prompty i efektywnie korzystać z AI.
         </p>
       </div>
 

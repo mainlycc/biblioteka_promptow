@@ -90,6 +90,19 @@ export async function POST(request: NextRequest) {
       console.error("Błąd wysyłki emaila powitalnego:", emailError)
     }
 
+    // Wyślij powiadomienie do administratora
+    try {
+      await resend.emails.send({
+        from: "Biblioteka Promptów <newsletter@bibliotekapromptow.pl>",
+        to: "mainly.agn@gmail.com",
+        subject: `📬 Nowy zapis do newslettera: ${email.toLowerCase().trim()}`,
+        html: getAdminNotificationHtml(email, existing ? "ponowny zapis" : "nowy zapis"),
+      })
+    } catch (adminEmailError) {
+      // Nie blokujemy zapisu nawet jeśli powiadomienie się nie wyślał
+      console.error("Błąd wysyłki powiadomienia do administratora:", adminEmailError)
+    }
+
     return NextResponse.json({
       success: true,
       message: "Zapisano do newslettera!",
@@ -101,6 +114,67 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function getAdminNotificationHtml(email: string, type: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nowy zapis do newslettera</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="display: inline-block; background: linear-gradient(135deg, #f97316, #ea580c); padding: 16px 32px; border-radius: 16px;">
+        <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">
+          📚 Biblioteka Promptów
+        </h1>
+      </div>
+    </div>
+
+    <!-- Main Card -->
+    <div style="background: #ffffff; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #fed7aa;">
+      
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">📬</div>
+        <h2 style="margin: 0 0 8px 0; color: #1f2937; font-size: 28px; font-weight: 700;">
+          ${type === "nowy zapis" ? "Nowy zapis do newslettera" : "Ponowny zapis do newslettera"}
+        </h2>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 24px 0;" />
+
+      <div style="background: #fff7ed; border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 12px 0;">
+          <strong>Email:</strong> ${email}
+        </p>
+        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 12px 0;">
+          <strong>Typ:</strong> ${type}
+        </p>
+        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0;">
+          <strong>Data:</strong> ${new Date().toLocaleString("pl-PL")}
+        </p>
+      </div>
+
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0;">
+        To jest automatyczne powiadomienie z systemu newslettera.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 0 20px;">
+      <p style="color: #d1d5db; font-size: 11px; margin: 16px 0 0 0;">
+        © ${new Date().getFullYear()} Biblioteka Promptów
+      </p>
+    </div>
+  </div>
+</body>
+</html>`
 }
 
 function getWelcomeEmailHtml(email: string): string {
