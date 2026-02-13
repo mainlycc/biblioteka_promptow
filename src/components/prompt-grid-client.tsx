@@ -26,6 +26,7 @@ interface Prompt {
   content_pl?: string;
   introduction?: string;
   tags: string[];
+  category?: string;
   author: string;
   author_id?: string;
   author_username?: string;
@@ -205,6 +206,13 @@ export function PromptGridClient({ prompts }: PromptGridClientProps) {
                 
                 <CardContent className="flex flex-col flex-1 gap-2 pt-1 px-3 md:px-4 pb-0">
                   <div className="text-xs md:text-sm text-muted-foreground leading-normal whitespace-pre-wrap break-words overflow-hidden line-clamp-4 md:line-clamp-6">{prompt.description}</div>
+                  {prompt.category && (
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">
+                        {prompt.category}
+                      </Badge>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1">
                     {prompt.tags.map((tag, i) => (
                       <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>

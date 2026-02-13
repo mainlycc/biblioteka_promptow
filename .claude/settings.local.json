@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.bibliotekapromptow.pl)",
+      "Bash(npx next build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nnaprawa SEO: konwersja stron na SSR, metadane, czyszczenie sitemap\n\n- /prompty i /prompts-graficzne: konwersja z CSR na SSR \\(Google widzi tresc zamiast \"Ladowanie...\"\\)\n- dodanie metadanych SEO do /newsletter i /prompts-graficzne\n- /filmowe: ustawienie noindex \\(strona placeholder\\)\n- sitemap: usuniecie /dashboard, /login, /filmowe\n- blog: H1 zmieniony na bardziej opisowy \"Blog o AI i Prompt Engineering\"\n- nowe client componenty: prompt-grid-client, prompts-graficzne-client\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
+    ]
+  }
+}

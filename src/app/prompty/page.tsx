@@ -2,6 +2,9 @@ import { PromptGridClient } from "@/components/prompt-grid-client"
 import { OrganizationSchema, WebsiteSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import type { Metadata } from "next"
 import { supabase } from "@/lib/supabase"
+import { redirect } from "next/navigation"
+import { slugToCategory, categoryToSlug } from "@/lib/category-utils"
+import { CATEGORIES } from "@/lib/category-mapper"
 
 export const revalidate = 60
 
@@ -40,6 +43,7 @@ interface Prompt {
   content_pl?: string;
   introduction?: string;
   tags: string[];
+  category?: string;
   author: string;
   author_id?: string;
   author_username?: string;
@@ -52,13 +56,18 @@ interface Prompt {
   created_at: string;
 }
 
-async function getPrompts(): Promise<Prompt[]> {
+async function getPrompts(category?: string | null): Promise<Prompt[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('prompts')
       .select('*')
-      .eq('type', 'text')
-      .order('created_at', { ascending: false });
+      .eq('type', 'text');
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Błąd podczas pobierania promptów:', error);
@@ -72,7 +81,39 @@ async function getPrompts(): Promise<Prompt[]> {
   }
 }
 
-export default async function PromptyPage() {
+type Props = {
+  searchParams: Promise<{ category?: string }>;
+};
+
+export default async function PromptyPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const categoryParam = params.category;
+  
+  // Jeśli jest parametr category, przekieruj na dedykowaną podstronę
+  if (categoryParam) {
+    // Sprawdź czy to slug czy pełna nazwa kategorii
+    let categorySlug: string;
+    const categoryFromSlug = slugToCategory(categoryParam);
+    
+    if (categoryFromSlug) {
+      // To jest slug - użyj go bezpośrednio
+      categorySlug = categoryParam;
+    } else {
+      // To może być pełna nazwa kategorii - spróbuj znaleźć kategorię
+      const foundCategory = CATEGORIES.find(cat => 
+        cat.toLowerCase() === categoryParam.toLowerCase()
+      );
+      if (foundCategory) {
+        categorySlug = categoryToSlug(foundCategory);
+      } else {
+        // Nie znaleziono - użyj parametru jako slug (może być nieprawidłowy, ale przekierujemy)
+        categorySlug = categoryParam.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      }
+    }
+    
+    redirect(`/prompty/${categorySlug}`);
+  }
+  
   const prompts = await getPrompts();
 
   return (

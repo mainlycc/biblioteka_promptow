@@ -27,6 +27,7 @@ interface Prompt {
   content_pl?: string;
   introduction?: string;
   tags: string[];
+  category?: string;
   author: string;
   author_id?: string;
   author_username?: string;

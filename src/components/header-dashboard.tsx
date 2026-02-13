@@ -1,14 +1,93 @@
 "use client"
 
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { useSearch } from "@/contexts/search-context";
 import { cn } from "@/lib/utils";
-import { FileText, Image as ImageIcon } from "lucide-react";
+import { FileText, Image as ImageIcon, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CATEGORIES } from "@/lib/category-mapper";
+import { categoryToSlug } from "@/lib/category-utils";
+
+function CategoryDropdown() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const currentCategory = searchParams.get('category');
+  const isPromptyPage = pathname === "/prompty";
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/"
+    }
+    return pathname === href || pathname.startsWith(href + "/")
+  }
+
+  return (
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          onMouseEnter={() => setIsDropdownOpen(true)}
+          className={cn(
+            "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+            isActive("/prompty") 
+              ? "bg-orange-100 text-orange-700 shadow-sm" 
+              : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+          )}
+        >
+          <FileText className="h-4 w-4" />
+          <span>Prompty tekstowe</span>
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        onMouseEnter={() => setIsDropdownOpen(true)}
+        onMouseLeave={() => setIsDropdownOpen(false)}
+        align="start"
+        className="min-w-[200px]"
+      >
+        <DropdownMenuItem asChild>
+          <Link 
+            href="/prompty"
+            className={cn(
+              "cursor-pointer",
+              !currentCategory && isPromptyPage ? "bg-orange-50 text-orange-700" : ""
+            )}
+          >
+            Wszystkie prompty
+          </Link>
+        </DropdownMenuItem>
+        {CATEGORIES.map((category) => {
+          const categorySlug = categoryToSlug(category);
+          const isActive = pathname === `/prompty/${categorySlug}`;
+          return (
+            <DropdownMenuItem key={category} asChild>
+              <Link 
+                href={`/prompty/${categorySlug}`}
+                className={cn(
+                  "cursor-pointer",
+                  isActive ? "bg-orange-50 text-orange-700" : ""
+                )}
+              >
+                {category}
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function Header() {
   const { searchQuery, setSearchQuery } = useSearch();
@@ -42,18 +121,22 @@ export function Header() {
         
         {/* Navigation links - Desktop only */}
         <nav className="hidden md:flex items-center gap-2 ml-4">
-          <Link
-            href="/prompty"
-            className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
-              isActive("/prompty") 
-                ? "bg-orange-100 text-orange-700 shadow-sm" 
-                : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-            )}
-          >
-            <FileText className="h-4 w-4" />
-            <span>Prompty tekstowe</span>
-          </Link>
+          <Suspense fallback={
+            <Link
+              href="/prompty"
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+                isActive("/prompty") 
+                  ? "bg-orange-100 text-orange-700 shadow-sm" 
+                  : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+              )}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Prompty tekstowe</span>
+            </Link>
+          }>
+            <CategoryDropdown />
+          </Suspense>
           <Link
             href="/prompts-graficzne"
             className={cn(

@@ -10,12 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye, Languages, BookOpen, EyeOff } from "lucide-react"
+import { ArrowLeft, Save, Download, FileText, Image as ImageIcon, Check, AlertCircle, Lock, X, Link as LinkIcon, User, Calendar, Hash, Sparkles, Eye, Languages, BookOpen, EyeOff, Folder } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { PromptPreview } from "@/components/PromptPreview"
 import { PromptGridPreview } from "@/components/PromptGridPreview"
 import { BlogGenerator } from "@/components/blog-generator"
+import { CATEGORIES, mapTagsToCategory } from "@/lib/category-mapper"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface PromptData {
   title: string
@@ -33,6 +35,7 @@ interface PromptData {
   tweet_id?: string
   created_at?: string
   tags?: string[]
+  category?: string
 }
 
 export default function AdminPage() {
@@ -336,9 +339,22 @@ export default function AdminPage() {
       const existingTags = promptData.tags || []
       const newTags = data.tags.filter((tag: string) => !existingTags.includes(tag))
       const allTags = [...existingTags, ...newTags]
-
-      setPromptData(prev => ({ ...prev, tags: allTags }))
-      setMessage({ type: 'success', text: `Wygenerowano ${newTags.length} nowych tagów!` })
+      
+      // Automatyczne sugerowanie kategorii na podstawie tagów
+      const suggestedCategory = mapTagsToCategory(allTags)
+      setPromptData(prev => {
+        const shouldUpdateCategory = !prev.category || prev.category === 'Inne'
+        return {
+          ...prev,
+          tags: allTags,
+          category: shouldUpdateCategory ? suggestedCategory : prev.category
+        }
+      })
+      
+      setMessage({ 
+        type: 'success', 
+        text: `Wygenerowano ${newTags.length} nowych tagów!${(!promptData.category || promptData.category === 'Inne') ? ` Sugerowana kategoria: ${suggestedCategory}` : ''}` 
+      })
     } catch (error) {
       setMessage({ type: 'error', text: `Błąd podczas generowania tagów: ${error instanceof Error ? error.message : 'Nieznany błąd'}` })
     } finally {
@@ -473,9 +489,13 @@ export default function AdminPage() {
 
   const addTag = (tag: string) => {
     if (tag.trim() && !promptData.tags?.includes(tag.trim())) {
+      const newTags = [...(promptData.tags || []), tag.trim()]
+      const suggestedCategory = mapTagsToCategory(newTags)
       setPromptData(prev => ({ 
         ...prev, 
-        tags: [...(prev.tags || []), tag.trim()] 
+        tags: newTags,
+        // Automatycznie sugeruj kategorię jeśli nie jest ustawiona lub jest "Inne"
+        category: (!prev.category || prev.category === 'Inne') ? suggestedCategory : prev.category
       }))
     }
   }
@@ -521,7 +541,8 @@ export default function AdminPage() {
       type: data.type,
       images: data.images,
       author: data.author,
-      tags: data.tags
+      tags: data.tags,
+      category: data.category || mapTagsToCategory(data.tags || [])
     })
 
     // Sprawdzamy strukturę tabeli przed zapisem
@@ -559,6 +580,7 @@ export default function AdminPage() {
         author_profile_image: data.author_profile_image,
         tweet_id: data.tweet_id,
         tags: data.tags || [],
+        category: data.category || mapTagsToCategory(data.tags || []),
         created_at: new Date().toISOString()
       }])
 
@@ -1077,6 +1099,33 @@ export default function AdminPage() {
                         </div>
 
                       <div className="space-y-2">
+                        <Label htmlFor="category" className="flex items-center gap-2">
+                          <Folder className="h-4 w-4" />
+                          Kategoria
+                        </Label>
+                        <Select
+                          value={promptData.category || 'Inne'}
+                          onValueChange={(value) => setPromptData(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger id="category">
+                            <SelectValue placeholder="Wybierz kategorię" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {promptData.tags && promptData.tags.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Sugerowana na podstawie tagów: {mapTagsToCategory(promptData.tags)}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
                         <Label htmlFor="tags" className="flex items-center gap-2">
                           <Hash className="h-4 w-4" />
                           Tagi
@@ -1560,6 +1609,33 @@ export default function AdminPage() {
                             )}
                           </div>
                         </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="category-x" className="flex items-center gap-2">
+                          <Folder className="h-4 w-4" />
+                          Kategoria
+                        </Label>
+                        <Select
+                          value={promptData.category || 'Inne'}
+                          onValueChange={(value) => setPromptData(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger id="category-x">
+                            <SelectValue placeholder="Wybierz kategorię" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {promptData.tags && promptData.tags.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Sugerowana na podstawie tagów: {mapTagsToCategory(promptData.tags)}
+                          </p>
+                        )}
+                      </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="tags-x" className="flex items-center gap-2">

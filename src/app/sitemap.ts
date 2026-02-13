@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 import { getAllPosts } from '@/lib/blog'
 import { getMDXPosts } from '@/lib/mdx-posts'
+import { CATEGORIES } from '@/lib/category-mapper'
+import { categoryToSlug } from '@/lib/category-utils'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://bibliotekapromptow.pl'
@@ -32,6 +34,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    // Podstrony kategorii promptów
+    ...CATEGORIES.map((category) => ({
+      url: `${baseUrl}/prompty/${categoryToSlug(category)}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
     {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),

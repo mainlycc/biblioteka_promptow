@@ -22,6 +22,7 @@ interface Prompt {
   content_pl?: string;
   introduction?: string;
   tags: string[];
+  category?: string;
   author: string;
   author_id?: string;
   author_username?: string;
@@ -298,6 +299,18 @@ export default async function Page({ params }: Props) {
                     )
                   })}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Category */}
+        {prompt.category && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">Kategoria:</span>
+              <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200">
+                {prompt.category}
+              </Badge>
             </div>
           </div>
         )}
