@@ -12,6 +12,7 @@ import { PromptIntroduction } from "@/components/prompt-introduction"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Image from "next/image"
+import { SafeImage } from "@/components/safe-image"
 import { truncateTitle, formatMetaDescription, isValidImageUrl, createImageAltText } from "@/lib/metadata-utils"
 
 interface Prompt {
@@ -178,9 +179,10 @@ export async function generateStaticParams() {
   }
 }
 
-// Dynamiczny rendering dla pozostałych promptów
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Rewalidacja co godzinę
+// ISR - strony są cache'owane i odświeżane co godzinę
+// UWAGA: dynamic = 'force-dynamic' zostało usunięte bo konflikuje z revalidate
+// (force-dynamic wyłącza cache i powoduje live query do Supabase przy każdym crawlu Googlebota → błędy 5xx)
+export const revalidate = 3600
 
 export default async function Page({ params }: Props) {
   const { id } = await params
@@ -278,7 +280,7 @@ export default async function Page({ params }: Props) {
                     const altText = createImageAltText(displayTitle, index)
                     
                     return (
-                      <Image
+                      <SafeImage
                         key={index}
                         src={imageUrl}
                         alt={altText}
@@ -290,11 +292,6 @@ export default async function Page({ params }: Props) {
                           gridRow: (prompt.images?.length || 0) === 1 ? '1 / -1' : (prompt.images?.length || 0) <= 2 ? '1 / -1' : index < 2 ? '1' : '2'
                         }}
                         loading="lazy"
-                        onError={(e) => {
-                          // Ukryj zepsuty obraz - dla Next.js Image używamy inline style
-                          const target = e.currentTarget as HTMLImageElement
-                          target.style.display = 'none'
-                        }}
                       />
                     )
                   })}

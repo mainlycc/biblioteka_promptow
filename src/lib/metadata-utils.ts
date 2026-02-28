@@ -3,6 +3,20 @@
  */
 
 /**
+ * Usuwa emoji z początku i końca ciągu znaków (do użytku w meta title/description)
+ * Wyświetlane nagłówki H1 mogą mieć emoji, ale meta title w SERP powinien być czysty.
+ */
+export function stripEmoji(text: string): string {
+  // Regex dopasowuje emoji i inne znaki spoza podstawowego Unicode
+  return text
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')
+    .replace(/[\u{FE00}-\u{FEFF}]/gu, '')
+    .replace(/^\s+/, '')
+    .trim();
+}
+
+/**
  * Przycina tytuł do maksymalnej długości 60 znaków (optymalna długość dla SEO)
  * @param title - Tytuł do przycięcia
  * @param suffix - Opcjonalny sufiks (np. " - Biblioteka Promptów")

@@ -15,6 +15,29 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
 
+  // Przekierowania 301 (SEO-safe)
+  async redirects() {
+    return [
+      // www → non-www (konsolidacja authority i canonicali)
+      // Bez tego Google widzi dwie wersje strony i dzieli sygnały SEO
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.bibliotekapromptow.pl' }],
+        destination: 'https://bibliotekapromptow.pl/:path*',
+        permanent: true,
+      },
+      // UWAGA: Zanim ten redirect zadziała, musisz zmienić slug w Supabase:
+      //   stare: "stwórz-zaproszenia-slubne-ai-canva-poradnik"  (z polskim ó)
+      //   nowe:  "stworz-zaproszenia-slubne-ai-canva-poradnik"  (bez polskich znaków)
+      // Po zmianie sluga w bazie odkomentuj poniższy wpis:
+      // {
+      //   source: '/blog/stw%C3%B3rz-zaproszenia-slubne-ai-canva-poradnik',
+      //   destination: '/blog/stworz-zaproszenia-slubne-ai-canva-poradnik',
+      //   permanent: true,
+      // },
+    ];
+  },
+
   // Headers bezpieczeństwa
   async headers() {
     return [

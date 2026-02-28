@@ -12,7 +12,7 @@ import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld-schema"
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import { components } from '@/mdx-components'
-import { truncateTitle, formatMetaDescription, isValidImageUrl } from "@/lib/metadata-utils"
+import { truncateTitle, formatMetaDescription, isValidImageUrl, stripEmoji } from "@/lib/metadata-utils"
 
 const resolveFeaturedImageUrl = (featuredImage?: string | null) => {
   if (!featuredImage) return null
@@ -100,13 +100,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       }
     }
 
-    // Walidacja i formatowanie tytułu (max 60 znaków)
+    // Walidacja i formatowanie tytułu (max 60 znaków, bez emoji w meta)
     const rawTitle = post.meta_title || post.title || ""
-    const title = truncateTitle(rawTitle)
-    
-    // Walidacja i formatowanie meta description (120-160 znaków)
+    const title = truncateTitle(stripEmoji(rawTitle))
+
+    // Walidacja i formatowanie meta description (120-160 znaków, bez emoji)
     const rawDescription = post.meta_description || post.excerpt || ""
-    const description = formatMetaDescription(rawDescription)
+    const description = formatMetaDescription(stripEmoji(rawDescription))
 
     // Walidacja obrazu - sprawdzamy czy URL jest prawidłowy
     const validImageUrl = featuredImageUrl && isValidImageUrl(featuredImageUrl) 

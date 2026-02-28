@@ -14,18 +14,18 @@ import { BlogError } from "@/components/blog-error"
 export const revalidate = 30
 
 export const metadata: Metadata = {
-  title: "Blog - Biblioteka Promptów",
-  description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji. Eksperckie artykuły o AI.",
-  keywords: ["blog AI", "prompt engineering", "artykuły AI", "trendy AI", "porady ChatGPT"],
+  title: "Blog o AI i Prompt Engineering | Biblioteka Promptów",
+  description: "Praktyczne poradniki, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji. Dowiedz się, jak pisać skuteczne prompty do ChatGPT, Claude i Gemini.",
+  keywords: ["blog AI", "prompt engineering po polsku", "jak pisać prompty", "ChatGPT poradnik", "sztuczna inteligencja artykuły"],
   openGraph: {
-    title: "Blog - Biblioteka Promptów",
-    description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji.",
+    title: "Blog o AI i Prompt Engineering | Biblioteka Promptów",
+    description: "Praktyczne poradniki i porady z zakresu prompt engineering, ChatGPT, Claude i sztucznej inteligencji.",
     url: "https://bibliotekapromptow.pl/blog",
     type: "website",
   },
   twitter: {
-    title: "Blog - Biblioteka Promptów",
-    description: "Odkryj najnowsze trendy, porady i najlepsze praktyki w dziedzinie prompt engineering i sztucznej inteligencji.",
+    title: "Blog o AI i Prompt Engineering | Biblioteka Promptów",
+    description: "Praktyczne poradniki i porady z zakresu prompt engineering, ChatGPT, Claude i sztucznej inteligencji.",
   },
   alternates: {
     canonical: "/blog",
@@ -91,10 +91,10 @@ export default async function BlogPage() {
 
     blogPosts = allPosts;
     
-    // Jeśli jest więcej niż 12 postów, pokaż tylko pierwsze 12
-    if (blogPosts.length > 12) {
-      blogPosts = blogPosts.slice(0, 12);
-      console.log('📝 Ograniczono do 12 postów z', allPosts.length, 'dostępnych');
+    // Jeśli jest więcej niż 50 postów, pokaż tylko pierwsze 50
+    if (blogPosts.length > 50) {
+      blogPosts = blogPosts.slice(0, 50);
+      console.log('📝 Ograniczono do 50 postów z', allPosts.length, 'dostępnych');
     }
   } catch (err: any) {
     console.error('❌ Błąd podczas pobierania postów bloga:', err);
